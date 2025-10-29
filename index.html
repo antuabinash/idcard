@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <title>ID Card Data Entry</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
@@ -19,7 +19,7 @@
         }
         h1 { color: #0056b3; }
         
-        #entryForm, #shareSection {
+        #schoolSetupSection, #entryForm, #shareSection {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
@@ -55,6 +55,12 @@
             font-weight: 600;
             margin-top: 10px;
         }
+        
+        /* Button Colors */
+        #saveSetupBtn {
+            background-color: #007bff;
+            color: white;
+        }
         #addBtn {
             background-color: #007bff;
             color: white;
@@ -63,10 +69,11 @@
             background-color: #ffc107;
             color: #333;
         }
-        #shareAllBtn {
+        #exportBtn {
             background-color: #28a745;
             color: white;
         }
+
         #studentList {
             max-width: 600px;
             margin: 20px auto 0 auto;
@@ -89,9 +96,43 @@
 </head>
 <body>
 
-    <h1 id="step1Title">ID Card Data Entry</h1>
+    <h1 id="mainTitle">ID Card Data Entry</h1>
+
+    <div id="schoolSetupSection">
+        <h3>Step 1: School Details</h3>
+        <div>
+            <label for="schoolName">School Name:</label>
+            <input type="text" id="schoolName" required>
+        </div>
+        <div>
+            <label for="block">Block:</label>
+            <input type="text" id="block">
+        </div>
+        <div>
+            <label for="district">District:</label>
+            <input type="text" id="district">
+        </div>
+        <div>
+            <label for="pincode">Pincode:</label>
+            <input type="text" id="pincode">
+        </div>
+        <div>
+            <label for="hm">Headmaster Name:</label>
+            <input type="text" id="hm">
+        </div>
+        <div>
+            <label for="udise">UDISE Code:</label>
+            <input type="text" id="udise" required>
+        </div>
+        <div>
+            <label for="hmSignature">HM Signature Photo:</label>
+            <input type="file" id="hmSignature" accept="image/png, image/jpeg" required>
+        </div>
+        <button id="saveSetupBtn">Save & Add Students</button>
+    </div>
     
-    <div id="entryForm">
+    <div id="entryForm" style="display:none;">
+        <h3>Step 2: Add Students</h3>
         <div>
             <label for="name">Full Name:</label>
             <input type="text" id="name" required>
@@ -118,7 +159,7 @@
         </div>
         
         <button id="addBtn">Add Student</button>
-        <button id="completeBtn">Done Adding (Preview & Share)</button>
+        <button id="completeBtn">Done Adding (Preview & Export)</button>
     </div>
 
     <h3 id="previewTitle" style="display:none;">Student Preview:</h3>
@@ -126,21 +167,31 @@
         </div>
 
     <div id="shareSection" style="display:none;">
-        <button id="shareAllBtn">Share All (CSV + Photos)</button>
+        <h3>Step 3: Export Data</h3>
+        <button id="exportBtn">Download / Share All Data</button>
     </div>
 
     <script>
-        let students = [];
+        let schoolData = {}; // Global object to hold school details
+        let students = [];    // Global array to hold students
 
-        // Get elements for UI control
+        // --- Get All DOM Elements ---
+        const mainTitle = document.getElementById('mainTitle');
+
+        // Step 1 Elements
+        const schoolSetupSection = document.getElementById('schoolSetupSection');
+        const saveSetupBtn = document.getElementById('saveSetupBtn');
+        const schoolNameInput = document.getElementById('schoolName');
+        const blockInput = document.getElementById('block');
+        const districtInput = document.getElementById('district');
+        const pincodeInput = document.getElementById('pincode');
+        const hmInput = document.getElementById('hm');
+        const udiseInput = document.getElementById('udise');
+        const hmSignatureInput = document.getElementById('hmSignature');
+
+        // Step 2 Elements
         const entryForm = document.getElementById('entryForm');
         const completeBtn = document.getElementById('completeBtn');
-        const shareSection = document.getElementById('shareSection');
-        const studentListDiv = document.getElementById('studentList');
-        const step1Title = document.getElementById('step1Title');
-        const previewTitle = document.getElementById('previewTitle');
-
-        // Get form fields
         const addBtn = document.getElementById('addBtn');
         const nameInput = document.getElementById('name');
         const classInput = document.getElementById('class');
@@ -149,11 +200,50 @@
         const phoneInput = document.getElementById('phone');
         const photoInput = document.getElementById('photo');
 
-        // 1. Add Student Function (Unchanged)
+        // Step 3 Elements
+        const shareSection = document.getElementById('shareSection');
+        const exportBtn = document.getElementById('exportBtn');
+        
+        // Preview List
+        const studentListDiv = document.getElementById('studentList');
+        const previewTitle = document.getElementById('previewTitle');
+
+
+        // --- 1. SAVE SCHOOL SETUP ---
+        saveSetupBtn.addEventListener('click', () => {
+            const signatureFile = hmSignatureInput.files[0];
+            
+            // Validation
+            if (!schoolNameInput.value || !udiseInput.value || !signatureFile) {
+                alert('Please fill in School Name, UDISE Code, and upload a Signature.');
+                return;
+            }
+            
+            // Store all school data
+            schoolData = {
+                schoolName: schoolNameInput.value,
+                block: blockInput.value,
+                district: districtInput.value,
+                pincode: pincodeInput.value,
+                hm: hmInput.value,
+                udise: udiseInput.value,
+                signatureFile: signatureFile,
+                signatureFileName: signatureFile.name
+            };
+            
+            // Update UI
+            schoolSetupSection.style.display = 'none'; // Hide setup
+            entryForm.style.display = 'block';         // Show student entry
+            mainTitle.textContent = schoolData.schoolName; // Set main title
+        });
+
+
+        // --- 2. ADD STUDENT ---
         addBtn.addEventListener('click', () => {
             const classVal = classInput.value.trim();
             const rollVal = rollInput.value.trim();
             const originalPhoto = photoInput.files[0];
+
             if (!nameInput.value || !classVal || !rollVal) {
                 alert('Please fill in at least Name, Class, and Roll No.');
                 return;
@@ -162,8 +252,10 @@
                 alert('Please upload a photo for the student.');
                 return;
             }
+            
             const extension = originalPhoto.name.split('.').pop().toLowerCase();
             const newFilename = `${classVal}${rollVal}.${extension}`;
+            
             const student = {
                 name: nameInput.value,
                 class: classVal,
@@ -174,12 +266,15 @@
                 newPhotoName: newFilename
             };
             students.push(student);
+            
             const studentDiv = document.createElement('div');
             studentDiv.innerHTML = `
                 <span><strong>${student.name}</strong> (Class: ${student.class}, Roll: ${student.roll})</span>
                 <span>Photo: ${student.newPhotoName}</span>
             `;
             studentListDiv.appendChild(studentDiv);
+            
+            // Clear form
             nameInput.value = '';
             classInput.value = '';
             dobInput.value = '';
@@ -189,57 +284,75 @@
             nameInput.focus();
         });
 
-        // 2. Complete Button (Unchanged)
+
+        // --- 3. COMPLETE ADDING (Show Export Button) ---
         completeBtn.addEventListener('click', () => {
             if (students.length === 0) {
                 alert('Please add at least one student before completing.');
                 return;
             }
-            entryForm.style.display = 'none';
-            step1Title.style.display = 'none';
-            previewTitle.style.display = 'block'; 
-            shareSection.style.display = 'block';
+            entryForm.style.display = 'none';      // Hide student entry
+            previewTitle.style.display = 'block';  // Show preview title
+            shareSection.style.display = 'block';  // Show export button
         });
 
-        // 3. Share All Function (REFACTORED LOGIC)
-        const shareAllBtn = document.getElementById('shareAllBtn');
-        shareAllBtn.addEventListener('click', async () => {
+
+        // --- 4. EXPORT "SMART" FUNCTION (CSV + Photos + Signature) ---
+        exportBtn.addEventListener('click', async () => {
             if (students.length === 0) {
                 alert('No students added yet!');
                 return;
             }
 
-            shareAllBtn.textContent = 'Processing... Please Wait...';
-            shareAllBtn.disabled = true;
+            exportBtn.textContent = 'Processing... Please Wait...';
+            exportBtn.disabled = true;
 
-            let zipBlob; // Define blob variable in the outer scope
+            let zipBlob;
             const zipFileName = 'student_id_data.zip';
 
             try {
-                // --- 3a. Generate CSV data ---
-                const headers = ['Name', 'Class', 'DOB', 'RollNo', 'Phone', 'Photo'];
+                // --- 4a. Generate CSV data ---
+                // These headers match your Photoshop automation
+                const headers = [
+                    'Name', 'Class', 'DOB', 'RollNo', 'Phone', 'PhotoPath',
+                    'SchoolName', 'Block', 'District', 'Pincode', 'HM', 'UDISE', 'SignatureFile'
+                ];
                 let csvContent = headers.join(',') + '\n';
+                
+                // Create the safe directory name (removes spaces)
+                const schoolDir = (schoolData.schoolName + schoolData.udise).replace(/\s+/g, '');
+
                 students.forEach(student => {
+                    // Create the full E: drive path for the CSV
+                    const photoPath = `E:\\photos\\${schoolDir}\\${student.newPhotoName}`;
+                    
                     const row = [
                         `"${student.name}"`,
                         `"${student.class}"`,
                         `"${student.dob}"`,
                         `"${student.roll}"`,
                         `"${student.phone}"`,
-                        `"${student.newPhotoName}"`
+                        `"${photoPath}"`, // The new E: drive path
+                        `"${schoolData.schoolName}"`,
+                        `"${schoolData.block}"`,
+                        `"${schoolData.district}"`,
+                        `"${schoolData.pincode}"`,
+                        `"${schoolData.hm}"`,
+                        `"${schoolData.udise}"`,
+                        `"${schoolData.signatureFileName}"`
                     ];
                     csvContent += row.join(',') + '\n';
                 });
 
-                // --- 3b. Create Zip and add files ---
+                // --- 4b. Create Zip and add all files ---
                 const zip = new JSZip();
                 zip.file('student_data.csv', csvContent);
+                zip.file(schoolData.signatureFileName, schoolData.signatureFile); // Add HM signature
                 students.forEach(student => {
-                    zip.file(student.newPhotoName, student.photoFile);
+                    zip.file(student.newPhotoName, student.photoFile); // Add all student photos
                 });
 
-                // --- 3c. Generate the Zip Blob ---
-                // This is the part that can take a moment
+                // --- 4c. Generate the Zip Blob ---
                 zipBlob = await zip.generateAsync({ type: 'blob' });
                 
                 const zipFile = new File([zipBlob], zipFileName, {
@@ -253,40 +366,31 @@
                     files: [zipFile]
                 };
 
-                // --- 3d. Check if Web Share API is available AND can share files ---
+                // --- 4d. Try to Share, Fallback to Download ---
                 if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
                     await navigator.share(shareData);
                 } else {
-                    // This is the fallback for desktop browsers or browsers that can't share
-                    alert('Sharing is not supported on this browser. The .zip file will be downloaded instead.');
                     downloadBlob(zipBlob, zipFileName, 'application/zip');
                 }
 
             } catch (err) {
-                // --- 3e. THIS IS THE NEW ERROR HANDLING ---
-                console.error('Error creating or sharing zip file:', err);
-                alert('An error occurred: ' + err.name + ' - ' + err.message);
-
-                // Check if the user just clicked "Cancel" on the share sheet
-                if (err.name === 'AbortError') {
-                    console.log('Share was cancelled by user.');
-                } else {
-                    // For 'PermissionDenied' or other errors, try to download the file
-                    alert('Sharing failed. The file will be downloaded instead.');
+                console.error('Error sharing zip file:', err);
+                if (err.name !== 'AbortError') { // Don't do anything if user just clicked "cancel"
+                    // Silently download on "permission denied" or other errors
                     if (zipBlob) {
                         downloadBlob(zipBlob, zipFileName, 'application/zip');
                     } else {
-                        alert('Could not create the zip file to download.');
+                        alert('A critical error occurred while creating the zip file.');
                     }
                 }
             } finally {
-                // --- 3f. Reset button ---
-                shareAllBtn.textContent = 'Share All (CSV + Photos)';
-                shareAllBtn.disabled = false;
+                // --- 4e. Reset button ---
+                exportBtn.textContent = 'Download / Share All Data';
+                exportBtn.disabled = false;
             }
         });
 
-        // 4. Helper function to trigger download (Unchanged)
+        // --- 5. Helper function to trigger download ---
         function downloadBlob(content, fileName, contentType) {
             const blob = new Blob([content], { type: contentType });
             const link = document.createElement('a');
