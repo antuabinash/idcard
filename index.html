@@ -292,14 +292,13 @@
             "ସୁନ୍ଦରଗଡ଼": ["ବାଲିଶଙ୍କରା", "ବଡ଼ଗାଁ", "ବିଶ୍ରା", "ବଣାଇ", "ହେମଗିରି", "ଗୁରୁଣ୍ଡିଆ", "କୋଇଡ଼ା", "କୁଆରମୁଣ୍ଡା", "ଲାଠିକଟା", "ଲହୁଣୀପଡ଼ା", "ଲେଫ୍ରିପଡ଼ା", "ନୂଆଗାଁ", "ରାଜଗାଙ୍ଗପୁର", "ସବଡେଗା", "ସୁନ୍ଦରଗଡ଼", "ଟାଙ୍ଗରପାଲି"]
         };
         
-        // --- NEW: Odia Date Constants ---
         const odiaDigits = ['୦', '୧', '୨', '୩', '୪', '୫', '୬', '୭', '୮', '୯'];
         const odiaMonths = ['ଜାନୁଆରୀ', 'ଫେବୃଆରୀ', 'ମାର୍ଚ୍ଚ', 'ଅପ୍ରେଲ', 'ମଇ', 'ଜୁନ୍', 'ଜୁଲାଇ', 'ଅଗଷ୍ଟ', 'ସେପ୍ଟେମ୍ବର', 'ଅକ୍ଟୋବର', 'ନଭେମ୍ବର', 'ଡିସେମ୍ବର'];
 
         let schoolData = {};
         let students = [];
 
-        // --- Get All DOM Elements ---
+        // --- Get All DOM Elements (Same as before) ---
         const mainTitle = document.getElementById('mainTitle');
         const schoolInfoDisplay = document.getElementById('schoolInfoDisplay');
         const schoolSetupSection = document.getElementById('schoolSetupSection');
@@ -326,7 +325,7 @@
         const studentListDiv = document.getElementById('studentList');
         const previewTitle = document.getElementById('previewTitle');
 
-        // --- PREVENT ACCIDENTAL BACK BUTTON ---
+        // --- PREVENT ACCIDENTAL BACK BUTTON (Same as before) ---
         window.addEventListener('beforeunload', (e) => {
             if (students.length > 0 || schoolNameInput.value) {
                 e.preventDefault();
@@ -335,25 +334,23 @@
             }
         });
         
-        // --- NEW: Odia Date Conversion Function ---
+        // --- Odia Date Conversion Function (Same as before) ---
         function convertToOdiaDate(dateString) {
             if (!dateString) return '';
             try {
                 const [year, month, day] = dateString.split('-');
                 if (!year || !month || !day) return '';
-                
                 const odiaYear = year.split('').map(d => odiaDigits[parseInt(d)]).join('');
                 const odiaDay = day.split('').map(d => odiaDigits[parseInt(d)]).join('');
                 const odiaMonthName = odiaMonths[parseInt(month) - 1];
-                
                 return `${odiaDay} ${odiaMonthName} ${odiaYear}`;
             } catch (e) {
                 console.error("Could not parse date:", dateString);
-                return ''; // Return empty if date is invalid
+                return '';
             }
         }
 
-        // --- 0. POPULATE DISTRICTS & BLOCKS ---
+        // --- 0. POPULATE DISTRICTS & BLOCKS (Same as before) ---
         function populateDistricts() {
             const districts = Object.keys(odishaData);
             districts.forEach(district => {
@@ -376,7 +373,7 @@
             }
         });
 
-        // --- 1. SAVE SCHOOL SETUP ---
+        // --- 1. SAVE SCHOOL SETUP (Same as before) ---
         saveSetupBtn.addEventListener('click', () => {
             const signatureFile = hmSignatureInput.files[0];
             if (!schoolNameInput.value || !districtSelect.value || !blockSelect.value || !udiseInput.value || !signatureFile) {
@@ -403,13 +400,13 @@
             mainTitle.textContent = schoolData.schoolName;
         });
 
-        // --- 2. ADD STUDENT (Modified with FileReader) ---
+        // --- 2. ADD STUDENT (Same as before) ---
         addBtn.addEventListener('click', () => {
             const classVal = classSelect.value.trim();
             const rollVal = rollInput.value.trim();
             const originalPhoto = photoInput.files[0];
             const nameVal = nameInput.value.trim();
-            const dobVal = dobInput.value; // Get DOB
+            const dobVal = dobInput.value;
 
             if (!nameVal || !classVal || !rollVal) {
                 alert('Please fill in at least Name, Class, and Roll No.');
@@ -420,11 +417,10 @@
                 return;
             }
             
-            // --- Use FileReader to get Data URL for preview ---
             const reader = new FileReader();
             reader.onload = (e) => {
-                const photoDataUrl = e.target.result; // This is the base64 string
-                const odiaDOB = convertToOdiaDate(dobVal); // Convert DOB
+                const photoDataUrl = e.target.result;
+                const odiaDOB = convertToOdiaDate(dobVal);
                 
                 const firstName = nameVal.split(' ')[0] || 'student';
                 const safeFirstName = firstName.replace(/[^a-zA-Z0-9]/g, '');
@@ -437,16 +433,15 @@
                     name: nameVal,
                     class: classVal,
                     dob: dobVal,
-                    dobOdia: odiaDOB, // Store Odia DOB
+                    dobOdia: odiaDOB,
                     roll: rollVal,
                     phone: phoneInput.value,
                     photoFile: originalPhoto,
-                    photoDataUrl: photoDataUrl, // Store photo preview data
+                    photoDataUrl: photoDataUrl,
                     newPhotoName: newFilename
                 };
                 students.push(student);
                 
-                // --- NEW: Updated student list item HTML ---
                 const studentDiv = document.createElement('div');
                 studentDiv.dataset.studentId = studentId;
                 studentDiv.innerHTML = `
@@ -473,11 +468,10 @@
                 completeBtn.disabled = false;
             };
             
-            // Read the image file as a Data URL
             reader.readAsDataURL(originalPhoto);
         });
         
-        // --- STUDENT PHOTO PREVIEW (in form) ---
+        // --- STUDENT PHOTO PREVIEW (in form) (Same as before) ---
         photoInput.addEventListener('change', () => {
             const file = photoInput.files[0];
             if (file) {
@@ -489,7 +483,7 @@
             }
         });
 
-        // --- 2b. DELETE STUDENT ---
+        // --- 2b. DELETE STUDENT (Same as before) ---
         studentListDiv.addEventListener('click', (e) => {
             if (e.target.classList.contains('deleteBtn')) {
                 const studentId = e.target.dataset.id;
@@ -502,32 +496,27 @@
             }
         });
 
-        // --- 3. COMPLETE ADDING (Show Export Button) ---
+        // --- 3. COMPLETE ADDING (Same as before) ---
         completeBtn.addEventListener('click', () => {
             if (students.length === 0) return;
-            
             entryForm.style.display = 'none';
             previewTitle.style.display = 'block';
             studentListDiv.style.display = 'block';
             shareSection.style.display = 'block';
             schoolInfoDisplay.style.display = 'none';
-            
-            // --- NEW: Add class to hide delete buttons ---
             studentListDiv.classList.add('step-3-preview');
         });
 
-        // --- 3b. EDIT BUTTON (Go back to Step 2) ---
+        // --- 3b. EDIT BUTTON (Same as before) ---
         editBtn.addEventListener('click', () => {
             shareSection.style.display = 'none';
             previewTitle.style.display = 'none';
             entryForm.style.display = 'block';
             schoolInfoDisplay.style.display = 'block';
-            
-            // --- NEW: Remove class to show delete buttons ---
             studentListDiv.classList.remove('step-3-preview');
         });
 
-        // --- 4. EXPORT "SMART" FUNCTION ---
+        // --- 4. EXPORT "SMART" FUNCTION (MODIFIED) ---
         exportBtn.addEventListener('click', async () => {
             if (students.length === 0) return;
 
@@ -537,18 +526,22 @@
             const zipFileName = 'student_id_data.zip';
 
             try {
-                // CSV generation
+                // --- 4a. Generate CSV data (NEW ODIA HEADERS) ---
                 const headers = [
-                    'Name', 'Class', 'DOB', 'RollNo', 'Phone', 'PhotoPath',
-                    'SchoolName', 'Block', 'District', 'Pincode', 'UDISE', 'SignatureFile'
+                    'ନାମ', 'ଶ୍ରେଣୀ', 'ଜନ୍ମ ତାରିଖ', 'ରୋଲ୍ ନମ୍ବର', 'ଫୋନ୍ ନମ୍ବର', 'ଫଟୋ ପଥ',
+                    'ବିଦ୍ୟାଳୟର ନାମ', 'ବ୍ଲକ', 'ଜିଲ୍ଲା', 'ପିନକୋଡ୍', 'UDISE କୋଡ୍', 'ଦସ୍ତଖତ ଫାଇଲ୍'
                 ];
-                let csvContent = headers.join(',') + '\n';
+                
+                // --- NEW: Add UTF-8 BOM ---
+                let csvContent = '\uFEFF' + headers.join(',') + '\n';
+                
                 students.forEach(student => {
                     const photoPath = `e:\\photos\\${schoolData.udise}\\${student.newPhotoName}`;
+                    // Data values already include Odia, this is perfect.
                     const row = [
                         `"${student.name}"`,
                         `"${student.class}"`,
-                        `"${student.dob}"`,
+                        `"${student.dob}"`, // Using standard YYYY-MM-DD for the data, as it's machine-readable
                         `"${student.roll}"`,
                         `"${student.phone}"`,
                         `"${photoPath}"`,
@@ -562,13 +555,16 @@
                     csvContent += row.join(',') + '\n';
                 });
 
-                // Zip creation
+                // --- 4b. Create Zip and add all files ---
                 const zip = new JSZip();
-                zip.file('student_data.csv', csvContent);
+                // We must use { encoding: "UTF-8" } here when adding the file
+                zip.file('student_data.csv', csvContent); // JSZip handles UTF-8 by default
                 zip.file(schoolData.signatureFileName, schoolData.signatureFile);
                 students.forEach(student => {
                     zip.file(student.newPhotoName, student.photoFile);
                 });
+
+                // --- 4c. Generate the Zip Blob ---
                 zipBlob = await zip.generateAsync({ type: 'blob' });
                 
                 const zipFile = new File([zipBlob], zipFileName, {
@@ -581,7 +577,7 @@
                     files: [zipFile]
                 };
 
-                // Share or Download
+                // --- 4d. Try to Share, Fallback to Download ---
                 if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
                     await navigator.share(shareData);
                 } else {
@@ -597,14 +593,24 @@
                     }
                 }
             } finally {
+                // --- 4e. Reset button ---
                 exportBtn.textContent = 'Download / Share All Data';
                 exportBtn.disabled = false;
             }
         });
 
-        // --- 5. Helper function to trigger download ---
+        // --- 5. Helper function to trigger download (MODIFIED FOR UTF-8) ---
         function downloadBlob(content, fileName, contentType) {
-            const blob = new Blob([content], { type: contentType });
+            // Check if we are downloading a CSV (not used in main flow, but good for testing)
+            // The main flow downloads a zip, which is fine.
+            let blob;
+            if (contentType.includes('csv')) {
+                 // Add BOM for CSV downloads
+                blob = new Blob(['\uFEFF' + content], { type: contentType + ';charset=utf-8;' });
+            } else {
+                blob = new Blob([content], { type: contentType });
+            }
+            
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
@@ -615,7 +621,7 @@
             document.body.removeChild(link);
         }
         
-        // --- 6. Initialize District Dropdown ---
+        // --- 6. Initialize District Dropdown (Same as before) ---
         populateDistricts();
 
     </script>
