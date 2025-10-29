@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ID Card Data Entry</title>
+    <title>ID Card Data Entry (Debug)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <style>
@@ -268,8 +268,14 @@
                 }
 
             } catch (err) {
+                // ----- THIS IS THE ONLY PART THAT CHANGED -----
                 console.error('Error creating or sharing zip file:', err);
-                alert('An error occurred. Please try again.');
+                
+                // We will now show the *actual error message* to the user.
+                alert('An error occurred: ' + err.message); 
+                alert('Error name: ' + err.name);
+                // --------------------------------------------------
+
             } finally {
                 // Reset button
                 shareAllBtn.textContent = 'Share All (CSV + Photos)';
