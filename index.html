@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ID Card Data Entry (Debug)</title>
+    <title>ID Card Data Entry</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <style>
@@ -149,7 +149,7 @@
         const phoneInput = document.getElementById('phone');
         const photoInput = document.getElementById('photo');
 
-        // 1. Add Student Function (Mostly Unchanged)
+        // 1. Add Student Function (Unchanged)
         addBtn.addEventListener('click', () => {
             const classVal = classInput.value.trim();
             const rollVal = rollInput.value.trim();
@@ -174,16 +174,12 @@
                 newPhotoName: newFilename
             };
             students.push(student);
-            
-            // Add to the visual list
             const studentDiv = document.createElement('div');
             studentDiv.innerHTML = `
                 <span><strong>${student.name}</strong> (Class: ${student.class}, Roll: ${student.roll})</span>
                 <span>Photo: ${student.newPhotoName}</span>
             `;
             studentListDiv.appendChild(studentDiv);
-            
-            // Clear form
             nameInput.value = '';
             classInput.value = '';
             dobInput.value = '';
@@ -193,24 +189,19 @@
             nameInput.focus();
         });
 
-        // 2. NEW: Complete Button to switch from Step 1 to Step 2
+        // 2. Complete Button (Unchanged)
         completeBtn.addEventListener('click', () => {
             if (students.length === 0) {
                 alert('Please add at least one student before completing.');
                 return;
             }
-            
-            // Hide Step 1 UI
             entryForm.style.display = 'none';
             step1Title.style.display = 'none';
-            
-            // Show Step 2 UI
-            previewTitle.style.display = 'block'; // Show the "Student Preview:" title
-            shareSection.style.display = 'block'; // Show the share button
+            previewTitle.style.display = 'block'; 
+            shareSection.style.display = 'block';
         });
 
-
-        // 3. Share All Function (Unchanged logic, just attached to the new button)
+        // 3. Share All Function (REFACTORED LOGIC)
         const shareAllBtn = document.getElementById('shareAllBtn');
         shareAllBtn.addEventListener('click', async () => {
             if (students.length === 0) {
@@ -221,8 +212,11 @@
             shareAllBtn.textContent = 'Processing... Please Wait...';
             shareAllBtn.disabled = true;
 
+            let zipBlob; // Define blob variable in the outer scope
+            const zipFileName = 'student_id_data.zip';
+
             try {
-                // Generate CSV data
+                // --- 3a. Generate CSV data ---
                 const headers = ['Name', 'Class', 'DOB', 'RollNo', 'Phone', 'Photo'];
                 let csvContent = headers.join(',') + '\n';
                 students.forEach(student => {
@@ -237,17 +231,18 @@
                     csvContent += row.join(',') + '\n';
                 });
 
-                // Create Zip and add files
+                // --- 3b. Create Zip and add files ---
                 const zip = new JSZip();
                 zip.file('student_data.csv', csvContent);
                 students.forEach(student => {
                     zip.file(student.newPhotoName, student.photoFile);
                 });
 
-                // Generate Zip Blob
-                const blob = await zip.generateAsync({ type: 'blob' });
+                // --- 3c. Generate the Zip Blob ---
+                // This is the part that can take a moment
+                zipBlob = await zip.generateAsync({ type: 'blob' });
                 
-                const zipFile = new File([blob], 'student_id_data.zip', {
+                const zipFile = new File([zipBlob], zipFileName, {
                     type: 'application/zip',
                     lastModified: new Date().getTime()
                 });
@@ -258,32 +253,40 @@
                     files: [zipFile]
                 };
 
-                // Try to share
+                // --- 3d. Check if Web Share API is available AND can share files ---
                 if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
                     await navigator.share(shareData);
                 } else {
-                    // Fallback to download
-                    alert('Sharing is not supported on this browser (it may require HTTPS). The .zip file will be downloaded instead.');
-                    downloadBlob(blob, 'student_id_data.zip', 'application/zip');
+                    // This is the fallback for desktop browsers or browsers that can't share
+                    alert('Sharing is not supported on this browser. The .zip file will be downloaded instead.');
+                    downloadBlob(zipBlob, zipFileName, 'application/zip');
                 }
 
             } catch (err) {
-                // ----- THIS IS THE ONLY PART THAT CHANGED -----
+                // --- 3e. THIS IS THE NEW ERROR HANDLING ---
                 console.error('Error creating or sharing zip file:', err);
-                
-                // We will now show the *actual error message* to the user.
-                alert('An error occurred: ' + err.message); 
-                alert('Error name: ' + err.name);
-                // --------------------------------------------------
+                alert('An error occurred: ' + err.name + ' - ' + err.message);
 
+                // Check if the user just clicked "Cancel" on the share sheet
+                if (err.name === 'AbortError') {
+                    console.log('Share was cancelled by user.');
+                } else {
+                    // For 'PermissionDenied' or other errors, try to download the file
+                    alert('Sharing failed. The file will be downloaded instead.');
+                    if (zipBlob) {
+                        downloadBlob(zipBlob, zipFileName, 'application/zip');
+                    } else {
+                        alert('Could not create the zip file to download.');
+                    }
+                }
             } finally {
-                // Reset button
+                // --- 3f. Reset button ---
                 shareAllBtn.textContent = 'Share All (CSV + Photos)';
                 shareAllBtn.disabled = false;
             }
         });
 
-        // 4. Helper function to trigger download (as a fallback)
+        // 4. Helper function to trigger download (Unchanged)
         function downloadBlob(content, fileName, contentType) {
             const blob = new Blob([content], { type: contentType });
             const link = document.createElement('a');
