@@ -14,11 +14,12 @@
             background-color: #f4f7f6;
             color: #333;
         }
-        h1 {
+        h1, h3 {
             text-align: center;
-            color: #0056b3;
         }
-        #entryForm {
+        h1 { color: #0056b3; }
+        
+        #entryForm, #shareSection {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
@@ -42,7 +43,7 @@
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            box-sizing: border-box; /* Important for 100% width */
+            box-sizing: border-box; 
         }
         button {
             width: 100%;
@@ -58,21 +59,21 @@
             background-color: #007bff;
             color: white;
         }
-        #downloadCsvBtn {
-            background-color: #28a745;
-            color: white;
-        }
-        /* Changed button styling */
-        #shareZipBtn {
+        #completeBtn {
             background-color: #ffc107;
             color: #333;
         }
+        #shareAllBtn {
+            background-color: #28a745;
+            color: white;
+        }
         #studentList {
-            margin-top: 20px;
+            max-width: 600px;
+            margin: 20px auto 0 auto;
         }
         #studentList div {
             background: #fff;
-            padding: 10px;
+            padding: 10px 15px;
             border-radius: 4px;
             margin-bottom: 5px;
             border: 1px solid #eee;
@@ -88,8 +89,8 @@
 </head>
 <body>
 
-    <h1>ID Card Data Entry</h1>
-
+    <h1 id="step1Title">ID Card Data Entry</h1>
+    
     <div id="entryForm">
         <div>
             <label for="name">Full Name:</label>
@@ -117,25 +118,30 @@
         </div>
         
         <button id="addBtn">Add Student</button>
-        <button id="downloadCsvBtn">Download CSV</button>
-        <button id="shareZipBtn">Share Photos (.zip)</button>
+        <button id="completeBtn">Done Adding (Preview & Share)</button>
     </div>
 
+    <h3 id="previewTitle" style="display:none;">Student Preview:</h3>
     <div id="studentList">
-        <h3>Added Students:</h3>
         </div>
 
+    <div id="shareSection" style="display:none;">
+        <button id="shareAllBtn">Share All (CSV + Photos)</button>
+    </div>
+
     <script>
-        // This array will hold all our student objects
         let students = [];
 
-        // Get elements
-        const addBtn = document.getElementById('addBtn');
-        const downloadCsvBtn = document.getElementById('downloadCsvBtn');
-        const shareZipBtn = document.getElementById('shareZipBtn'); // Updated ID
+        // Get elements for UI control
+        const entryForm = document.getElementById('entryForm');
+        const completeBtn = document.getElementById('completeBtn');
+        const shareSection = document.getElementById('shareSection');
         const studentListDiv = document.getElementById('studentList');
+        const step1Title = document.getElementById('step1Title');
+        const previewTitle = document.getElementById('previewTitle');
 
-        // Form fields (all same as before)
+        // Get form fields
+        const addBtn = document.getElementById('addBtn');
         const nameInput = document.getElementById('name');
         const classInput = document.getElementById('class');
         const dobInput = document.getElementById('dob');
@@ -143,7 +149,7 @@
         const phoneInput = document.getElementById('phone');
         const photoInput = document.getElementById('photo');
 
-        // 1. Add Student Function (Unchanged)
+        // 1. Add Student Function (Mostly Unchanged)
         addBtn.addEventListener('click', () => {
             const classVal = classInput.value.trim();
             const rollVal = rollInput.value.trim();
@@ -168,12 +174,16 @@
                 newPhotoName: newFilename
             };
             students.push(student);
+            
+            // Add to the visual list
             const studentDiv = document.createElement('div');
             studentDiv.innerHTML = `
                 <span><strong>${student.name}</strong> (Class: ${student.class}, Roll: ${student.roll})</span>
                 <span>Photo: ${student.newPhotoName}</span>
             `;
             studentListDiv.appendChild(studentDiv);
+            
+            // Clear form
             nameInput.value = '';
             classInput.value = '';
             dobInput.value = '';
@@ -183,99 +193,98 @@
             nameInput.focus();
         });
 
-        // 2. Download CSV Function (Unchanged)
-        downloadCsvBtn.addEventListener('click', () => {
+        // 2. NEW: Complete Button to switch from Step 1 to Step 2
+        completeBtn.addEventListener('click', () => {
             if (students.length === 0) {
-                alert('No students added yet!');
+                alert('Please add at least one student before completing.');
                 return;
             }
-            const headers = ['Name', 'Class', 'DOB', 'RollNo', 'Phone', 'Photo'];
-            let csvContent = headers.join(',') + '\n';
-            students.forEach(student => {
-                const row = [
-                    `"${student.name}"`,
-                    `"${student.class}"`,
-                    `"${student.dob}"`,
-                    `"${student.roll}"`,
-                    `"${student.phone}"`,
-                    `"${student.newPhotoName}"`
-                ];
-                csvContent += row.join(',') + '\n';
-            });
-            downloadBlob(csvContent, 'student_data.csv', 'text/csv;charset=utf-8;');
-        });
-
-        // --- 3. UPDATED: Share ZIP Function ---
-        shareZipBtn.addEventListener('click', async () => { // Made async
-            if (students.length === 0) {
-                alert('No students added yet!');
-                return;
-            }
-
-            // --- 3a. Generate the Zip Blob ---
-            const zip = new JSZip();
-            students.forEach(student => {
-                zip.file(student.newPhotoName, student.photoFile);
-            });
-
-            let blob;
-            try {
-                // Show a loading message if needed
-                shareZipBtn.textContent = 'Zipping... Please Wait...';
-                blob = await zip.generateAsync({ type: 'blob' });
-            } catch (err) {
-                console.error('Error creating zip file:', err);
-                alert('Error creating zip file.');
-                shareZipBtn.textContent = 'Share Photos (.zip)'; // Reset button text
-                return;
-            }
-            shareZipBtn.textContent = 'Share Photos (.zip)'; // Reset button text
-
-            // --- 3b. Create a File object from the Blob ---
-            const zipFile = new File([blob], 'student_photos.zip', {
-                type: 'application/zip',
-                lastModified: new Date().getTime()
-            });
             
-            const shareData = {
-                title: 'Student Photos',
-                text: 'Student photos for ID card generation.',
-                files: [zipFile] // The file to be shared
-            };
-
-            // --- 3c. Check if Web Share API is available and can share files ---
-            if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-                try {
-                    // --- 3d. Try to Share ---
-                    await navigator.share(shareData);
-                    console.log('Photos shared successfully!');
-                } catch (err) {
-                    // This handles if the user clicks "Cancel" on the share dialog
-                    if (err.name !== 'AbortError') {
-                        console.error('Error sharing:', err);
-                        alert('Error sharing. The file will be downloaded instead.');
-                        // --- 3e. Fallback to download ---
-                        downloadBlob(blob, 'student_photos.zip', 'application/zip');
-                    }
-                }
-            } else {
-                // --- 3e. Fallback for non-supporting browsers (like file:// or HTTP) ---
-                alert('Sharing is not supported on this browser (it may require HTTPS). The .zip file will be downloaded instead.');
-                downloadBlob(blob, 'student_photos.zip', 'application/zip');
-            }
+            // Hide Step 1 UI
+            entryForm.style.display = 'none';
+            step1Title.style.display = 'none';
+            
+            // Show Step 2 UI
+            previewTitle.style.display = 'block'; // Show the "Student Preview:" title
+            shareSection.style.display = 'block'; // Show the share button
         });
 
 
-        // 4. Helper function to trigger any file download (Unchanged)
+        // 3. Share All Function (Unchanged logic, just attached to the new button)
+        const shareAllBtn = document.getElementById('shareAllBtn');
+        shareAllBtn.addEventListener('click', async () => {
+            if (students.length === 0) {
+                alert('No students added yet!');
+                return;
+            }
+
+            shareAllBtn.textContent = 'Processing... Please Wait...';
+            shareAllBtn.disabled = true;
+
+            try {
+                // Generate CSV data
+                const headers = ['Name', 'Class', 'DOB', 'RollNo', 'Phone', 'Photo'];
+                let csvContent = headers.join(',') + '\n';
+                students.forEach(student => {
+                    const row = [
+                        `"${student.name}"`,
+                        `"${student.class}"`,
+                        `"${student.dob}"`,
+                        `"${student.roll}"`,
+                        `"${student.phone}"`,
+                        `"${student.newPhotoName}"`
+                    ];
+                    csvContent += row.join(',') + '\n';
+                });
+
+                // Create Zip and add files
+                const zip = new JSZip();
+                zip.file('student_data.csv', csvContent);
+                students.forEach(student => {
+                    zip.file(student.newPhotoName, student.photoFile);
+                });
+
+                // Generate Zip Blob
+                const blob = await zip.generateAsync({ type: 'blob' });
+                
+                const zipFile = new File([blob], 'student_id_data.zip', {
+                    type: 'application/zip',
+                    lastModified: new Date().getTime()
+                });
+                
+                const shareData = {
+                    title: 'Student ID Data',
+                    text: 'Student CSV and photos for ID card generation.',
+                    files: [zipFile]
+                };
+
+                // Try to share
+                if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                    await navigator.share(shareData);
+                } else {
+                    // Fallback to download
+                    alert('Sharing is not supported on this browser (it may require HTTPS). The .zip file will be downloaded instead.');
+                    downloadBlob(blob, 'student_id_data.zip', 'application/zip');
+                }
+
+            } catch (err) {
+                console.error('Error creating or sharing zip file:', err);
+                alert('An error occurred. Please try again.');
+            } finally {
+                // Reset button
+                shareAllBtn.textContent = 'Share All (CSV + Photos)';
+                shareAllBtn.disabled = false;
+            }
+        });
+
+        // 4. Helper function to trigger download (as a fallback)
         function downloadBlob(content, fileName, contentType) {
             const blob = new Blob([content], { type: contentType });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
-            
             link.setAttribute('href', url);
             link.setAttribute('download', fileName);
             link.style.visibility = 'hidden';
-            
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
