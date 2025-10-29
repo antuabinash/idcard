@@ -27,6 +27,8 @@
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
+        
+        /* MODIFIED: Use flex to show button */
         #schoolInfoDisplay {
             max-width: 600px;
             margin: -10px auto 15px auto;
@@ -35,9 +37,28 @@
             border-radius: 8px;
             font-size: 14px;
             color: #495057;
+            /* Use flex to put button on the right */
+            display: flex; 
+            justify-content: space-between;
+            align-items: center;
         }
         #schoolInfoDisplay p {
-            margin: 5px 0;
+            margin: 2px 0; /* Tighter spacing */
+        }
+        /* NEW: Wrapper for text */
+        #schoolInfoText {
+            flex-grow: 1;
+        }
+        /* NEW: Style for the edit button */
+        #editSchoolBtn {
+            width: auto;
+            padding: 8px 12px;
+            font-size: 14px;
+            margin-top: 0;
+            margin-left: 15px;
+            background-color: #ffc107; /* Yellow */
+            color: #333;
+            flex-shrink: 0;
         }
         
         div {
@@ -98,8 +119,13 @@
             color: white;
             margin-top: 0;
         }
+        /* NEW: Clear Button */
+        #clearDataBtn {
+            background-color: #dc3545;
+            color: white;
+        }
 
-        /* --- NEW: Student List Styling --- */
+        /* --- Student List Styling --- */
         #studentList {
             max-width: 600px;
             margin: 20px auto 0 auto;
@@ -112,9 +138,8 @@
             border: 1px solid #eee;
             display: flex;
             justify-content: space-between;
-            align-items: center; /* Vertically center items */
+            align-items: center; 
         }
-        /* New class for the photo in the list */
         .list-preview-img {
             width: 40px;
             height: 40px;
@@ -123,9 +148,8 @@
             margin-right: 15px;
             flex-shrink: 0;
         }
-        /* New class to hold student text info */
         .student-info {
-            flex-grow: 1; /* Take up available space */
+            flex-grow: 1; 
             display: flex;
             flex-direction: column;
             font-size: 14px;
@@ -147,7 +171,6 @@
             margin-top: 0;
             flex-shrink: 0;
         }
-        /* NEW: Hides delete button when in Step 3 */
         #studentList.step-3-preview .deleteBtn {
             display: none;
         }
@@ -166,8 +189,7 @@
 </head>
 <body>
 
-    <h1 id="mainTitle">ID Card Data Entry
-    Abinash Mahapatra, 8594866511</h1>
+    <h1 id="mainTitle">ID Card Data Entry</h1>
 
     <div id="schoolSetupSection">
         <h3>Step 1: School Details</h3>
@@ -202,7 +224,10 @@
         <button id="saveSetupBtn">Save & Add Students</button>
     </div>
 
-    <div id="schoolInfoDisplay" style="display:none;"></div>
+    <!-- This div is now a flex container (see CSS) -->
+    <div id="schoolInfoDisplay" style="display:none;">
+        <!-- Content is added by JS -->
+    </div>
     
     <div id="entryForm" style="display:none;">
         <h3>Step 2: Add Students</h3>
@@ -257,13 +282,14 @@
         <h3>Step 3: Export Data</h3>
         <button id="exportBtn">Download / Share All Data</button>
         <button id="editBtn">Edit</button>
+        <button id="clearDataBtn">Start New (Clear Data)</button>
     </div>
 
     <script>
         // --- ODIA DATA (Districts & Blocks) ---
         const odishaData = {
             "ଅନୁଗୁଳ": ["ଅନୁଗୁଳ", "ଆଠମଲ୍ଲିକ", "ଛେଣ୍ଡିପଦା", "ତାଳଚେର", "ପାଲଲହଡ଼ା", "ବଅଁରପାଳ", "କିଶୋରନଗର", "କଣିହାଁ"],
-            "ବଲାଙ୍ଗୀର": ["ଆଗଲପୁର", "ବଲାଙ୍ଗୀର", "ବେଲପଡ଼ା", "ବଙ୍ଗୋମୁଣ୍ଡା", "ଦେଓଗାଁ", "ଗୁଡଭେଲା", "ଖପ୍ରାଖୋଲ", "ଲୋଇସିଂହା", "ମୁରିବାହାଲ", "ପାଟଣାଗଡ଼", "ପୁଇଁତଳା", "ସଇଁତଳା", "ଟିଟିଲାଗଡ଼", "ତୁରେକେଲା"],
+            "ବଲାଙ୍ଗୀର": ["ଆଗଲପୁର", "ବଲାଙ୍ଗୀର", "ବେଲପଡ଼ା", "ବଙ୍gୋମୁଣ୍ଡା", "ଦେଓଗାଁ", "ଗୁଡଭେଲା", "ଖପ୍ରାଖୋଲ", "ଲୋଇସିଂହା", "ମୁରିବାହାଲ", "ପାଟଣାଗଡ଼", "ପୁଇଁତଳା", "ସଇଁତଳା", "ଟିଟିଲାଗଡ଼", "ତୁରେକେଲା"],
             "ବରଗଡ଼": ["ଅତାବିରା", "ଅମ୍ବାଭୋନା", "ବରଗଡ଼", "ବରପାଲି", "ଭେଡେନ", "ଭଟଲି", "ବିଜେପୁର", "ଗାଇସିଲେଟ", "ଝାରବନ୍ଧ", "ପଦ୍ମପୁର", "ପାଇକମାଳ", "ସୋହେଲା"],
             "ଭଦ୍ରକ": ["ବାସୁଦେବପୁର", "ଭଦ୍ରକ", "ଭଣ୍ଡାରିପୋଖରୀ", "ଚାନ୍ଦବାଲି", "ଧାମନଗର", "ତିହିଡ଼ି", "ବନ୍ତ"],
             "ବାଲେଶ୍ୱର": ["ବାହାନଗା", "ବାଲେଶ୍ୱର", "ବାଲିଆପାଳ", "ବସ୍ତା", "ଭୋଗରାଇ", "ଜଳେଶ୍ୱର", "ଖଇରା", "ନୀଳଗିରି", "ଔପଦା", "ରେମୁଣା", "ସିମୁଳିଆ", "ସୋର"],
@@ -271,26 +297,26 @@
             "ଦେବଗଡ଼": ["ବାରକୋଟ", "ଦେବଗଡ଼", "ରିଆମାଳ", "ତିଲେଇବଣି"],
             "ଢେଙ୍କାନାଳ": ["ଭୁବନ", "ଢେଙ୍କାନାଳ ସଦର", "ଗଁଦିଆ", "ହିନ୍ଦୋଳ", "କାମାକ୍ଷାନଗର", "କଙ୍କଡ଼ାହାଡ଼", "ଓଡ଼ାପଡ଼ା", "ପରଜଙ୍ଗ"],
             "ଗଜପତି": ["ଗୋଷାଣୀ", "ଗୁମ୍ମା", "କାଶୀନଗର", "ମୋହନା", "ନୂଆଗଡ଼", "ଆର. ଉଦୟଗିରି", "ରାୟଗଡ଼"],
-            "ଗଞ୍ଜାମ": ["ଆସ୍କା", "ବେଗୁନିଆପଡ଼ା", "ବେଲଗୁଣ୍ଠା", "ଭଞ୍ଜନଗର", "ବୁଗୁଡ଼ା", "ଛତ୍ରପୁର", "ଚିକିଟି", "ଧରାକୋଟ", "ଦିଗପହଣ୍ଡି", "ଗଞ୍ଜାମ", "ହିଞ୍ଜିଳିକାଟୁ", "ଜଗନ୍ନାଥପ୍ରସାଦ", "ଖଲ୍ଲିକୋଟ", "କୁକୁଡ଼ାଖଣ୍ଡି", "ପାଟପୁର", "ପୋଲସରା", "ପୁରୁଷୋତ୍ତମପୁର", "ରଙ୍ଗେଇଲୁଣ୍ଡା", "ସାନଖେମୁଣ୍ଡି", "ଶେରଗଡ଼", "ସୋରଡ଼ା"],
+            "ଗଞ୍ଜାମ": ["ଆସ୍କା", "ବେଗୁନିଆପଡ଼ା", "ବେଲଗୁଣ୍ଠା", "ଭଞ୍ଜନଗର", "ବୁଗୁଡ଼ା", "ଛତ୍ରପୁର", "ଚିକିଟି", "ଧରାକୋଟ", "ଦିଗପହଣ୍ଡି", "ଗଞ୍ଜାମ", "ହିଞ୍ଜିଳିକାଟୁ", "ଜଗନ୍ନାଥପ୍ରସାଦ", "ଖଲ୍ଲିକୋଟ", "କୁକୁଡ଼ାଖଣ୍ଡି", "ପାଟପୁର", "ପୋଲସରା", "ପୁରୁଷୋତ୍ତମପୁର", "ରଙ୍gେଇଲୁଣ୍ଡା", "ସାନଖେମୁଣ୍ଡି", "ଶେରଗଡ଼", "ସୋରଡ଼ା"],
             "ଜଗତସିଂହପୁର": ["ବାଲିକୁଦା", "ବିରିଡ଼ି", "ଏରସମା", "ଜଗତସିଂହପୁର", "କୁଜଙ୍ଗ", "ନାଉଗାଁ", "ରଘୁନାଥପୁର", "ତିର୍ତ୍ତୋଲ"],
             "ଯାଜପୁର": ["ବଡ଼ଚଣା", "ବରୀ", "ବିଞ୍ଝାରପୁର", "ଦାନଗଦି", "ଦଶରଥପୁର", "ଧର୍ମଶାଳା", "ଯାଜପୁର", "କୋରେଇ", "ରସୁଲପୁର", "ସୁକିନ୍ଦା"],
             "ଝାରସୁଗୁଡ଼ା": ["ଝାରସୁଗୁଡ଼ା", "କିରମିରା", "କୋଲାବିରା", "ଲଇକେରା", "ଲଖନପୁର"],
-            "କଳାହାଣ୍ଡି": ["ଭବାନୀପାଟଣା", "ଧର୍ମଗଡ଼", "ଗୋଲାମୁଣ୍ଡା", "ଜୟପାଟଣା", "ଜୁନାଗଡ଼", "କଳମପୁର", "କର୍ଲାମୁଣ୍ଡା", "କେସିଙ୍ଗା", "କୋକସରା", "ଲାଞ୍ଜିଗଡ଼", "ମଦନପୁର-ରାମପୁର", "ନର୍ଲା", "ଥୁଆମୂଳ ରାମପୁର"],
-            "କନ୍ଧମାଳ": ["ବାଲିଗୁଡ଼ା", "ଚକାପାଦ", "ଦାରିଙ୍ଗବାଡ଼ି", "ଫୁଲବାଣୀ", "ଘୁ. ଉଦୟଗିରି", "ହରଭଙ୍ଗା", "କ. ନୂଆଗାଁ", "ଖଜୁରୀପଡ଼ା", "କୋଟଗଡ଼", "ଫିରିଙ୍ଗିଆ", "ରାଇକିଆ", "ଟିକାବାଲି"],
+            "କଳାହାଣ୍ଡି": ["ଭବାନୀପାଟଣା", "ଧର୍ମଗଡ଼", "ଗୋଲାମୁଣ୍ଡା", "ଜୟପାଟଣା", "ଜୁନାଗଡ଼", "କଳମପୁର", "କର୍ଲାମୁଣ୍ଡା", "କେସିଙ୍gା", "କୋକସରା", "ଲାଞ୍ଜିଗଡ଼", "ମଦନପୁର-ରାମପୁର", "ନର୍ଲା", "ଥୁଆମୂଳ ରାମପୁର"],
+            "କନ୍ଧମାଳ": ["ବାଲିଗୁଡ଼ା", "ଚକାପାଦ", "ଦାରିଙ୍gବାଡ଼ି", "ଫୁଲବାଣୀ", "ଘୁ. ଉଦୟଗିରି", "ହରଭଙ୍gା", "କ. ନୂଆଗାଁ", "ଖଜୁରୀପଡ଼ା", "କୋଟଗଡ଼", "ଫିରିଙ୍gିଆ", "ରାଇକିଆ", "ଟିକାବାଲି"],
             "କେନ୍ଦ୍ରାପଡ଼ା": ["ଆଳି", "ଡେରାବିଶ", "ଗରଦପୁର", "କେନ୍ଦ୍ରାପଡ଼ା", "ମହାକାଳପଡ଼ା", "ମାର୍ଶାଘାଇ", "ପଟ୍ଟାମୁଣ୍ଡାଇ", "ରାଜକନିକା", "ରାଜନଗର"],
             "କେନ୍ଦୁଝର": ["ଆନନ୍ଦପୁର", "ବାଂଶପାଳ", "ଚମ୍ପୁଆ", "ଘଟଗାଁ", "ଘସିପୁରା", "ହରିଚନ୍ଦନପୁର", "ହାଟଡିହି", "ଯୋଡ଼ା", "ଝୁମ୍ପୁରା", "କେନ୍ଦୁଝର ସଦର", "ପାଟଣା", "ସାହାରପଡ଼ା", "ତେଲକୋଇ"],
-            "ଖୋର୍ଦ୍ଧା": ["ବାଲିଅନ୍ତା", "ବାଲିପାଟଣା", "ବାଣପୁର", "ବେଗୁନିଆ", "ଭୁବନେଶ୍ୱର", "ବୋଲଗଡ଼", "ଚିଲିକା", "ଜଟଣୀ", "ଖୋର୍ଦ୍ଧା ସଦର", "ଟାଙ୍ଗୀ"],
-            "କୋରାପୁଟ": ["ବାନ୍ଧୁଗାଁ", "ବୈପାରିଗୁଡ଼ା", "ବୋରିଗୁମ୍ମା", "ଦଶମନ୍ତପୁର", "ଜୟପୁର", "କୋରାପୁଟ", "କୋଟପାଡ଼", "କୁନ୍ଦୁରା", "ଲାମତାପୁଟ", "ଲକ୍ଷ୍ମୀପୁର", "ମାଛକୁଣ୍ଡ", "ନନ୍ଦପୁର", "ନାରାୟଣପାଟଣା", "ପଟ୍ଟାଙ୍ଗୀ", "ସେମିଳିଗୁଡ଼ା"],
+            "ଖୋର୍ଦ୍ଧା": ["ବାଲିଅନ୍ତା", "ବାଲିପାଟଣା", "ବାଣପୁର", "ବେଗୁନିଆ", "ଭୁବନେଶ୍ୱର", "ବୋଲଗଡ଼", "ଚିଲିକା", "ଜଟଣୀ", "ଖୋର୍ଦ୍ଧା ସଦର", "ଟାଙ୍gୀ"],
+            "କୋରାପୁଟ": ["ବାନ୍ଧୁଗାଁ", "ବୈପାରିଗୁଡ଼ା", "ବୋରିଗୁମ୍ମା", "ଦଶମନ୍ତପୁର", "ଜୟପୁର", "କୋରାପୁଟ", "କୋଟପାଡ଼", "କୁନ୍ଦୁରା", "ଲାମତାପୁଟ", "ଲକ୍ଷ୍ମୀପୁର", "ମାଛକୁଣ୍ଡ", "ନନ୍ଦପୁର", "ନାରାୟଣପାଟଣା", "ପଟ୍ଟାଙ୍gୀ", "ସେମିଳିଗୁଡ଼ା"],
             "ମାଲକାନଗିରି": ["ଚିତ୍ରକୋଣ୍ଡା", "କାଲିମେଳା", "ଖଇରପୁଟ", "କୋରୁକୋଣ୍ଡା", "କୁଡୁମୁଲୁଗୁମ୍ମା", "ମାଲକାନଗିରି", "ମାଥିଲି", "ପଡ଼ିଆ"],
-            "ମୟୂରଭଞ୍ଜ": ["ବାଙ୍ଗିରିପୋଷି", "ବାରିପଦା", "ବଡ଼ସାହି", "ବେତନଟୀ", "ବିଶୋଇ", "ବିଜାତଳା", "ଗୋପବନ୍ଧୁନଗର", "ଜାମଦା", "ଯଶୀପୁର", "କପ୍ତିପଦା", "କରଞ୍ଜିଆ", "କୁଳିଅଣା", "କୁସୁମି", "ମୋରଡ଼ା", "ରରୁଆଁ", "ରାସଗୋବିନ୍ଦପୁର", "ରାଇରଙ୍ଗପୁର", "ଶାମାଖୁଣ୍ଟା", "ଶୁକ୍ରୁଳି", "ସୁଳିଆପଦା", "ଠାକୁରମୁଣ୍ଡା", "ତିରିଂ"],
-            "ନବରଙ୍ଗପୁର": ["ଚନ୍ଦାହାଣ୍ଡି", "ଡାବୁଗାଁ", "ଝରିଗାଁ", "କୋଷାଗୁମୁଡ଼ା", "ନନ୍ଦାହାଣ୍ଡି", "ନବରଙ୍ଗପୁର", "ପାପଡ଼ାହାଣ୍ଡି", "ରାଇଘର", "ତେନ୍ତୁଳିଖୁଣ୍ଟି", "ଉମରକୋଟ"],
+            "ମୟୂରଭଞ୍ଜ": ["ବାଙ୍gିରିପୋଷି", "ବାରିପଦା", "ବଡ଼ସାହି", "ବେତନଟୀ", "ବିଶୋଇ", "ବିଜାତଳା", "ଗୋପବନ୍ଧୁନଗର", "ଜାମଦା", "ଯଶୀପୁର", "କପ୍ତିପଦା", "କରଞ୍ଜିଆ", "କୁଳିଅଣା", "କୁସୁମି", "ମୋରଡ଼ା", "ରରୁଆଁ", "ରାସଗୋବିନ୍ଦପୁର", "ରାଇରଙ୍gପୁର", "ଶାମାଖୁଣ୍ଟା", "ଶୁକ୍ରୁଳି", "ସୁଳିଆପଦା", "ଠାକୁରମୁଣ୍ଡା", "ତିରିଂ"],
+            "ନବରଙ୍gପୁର": ["ଚନ୍ଦାହାଣ୍ଡି", "ଡାବୁଗାଁ", "ଝରିଗାଁ", "କୋଷାଗୁମୁଡ଼ା", "ନନ୍ଦାହାଣ୍ଡି", "ନବରଙ୍gପୁର", "ପାପଡ଼ାହାଣ୍ଡି", "ରାଇଘର", "ତେନ୍ତୁଳିଖୁଣ୍ଟି", "ଉମରକୋଟ"],
             "ନୟାଗଡ଼": ["ଭାପୁର", "ଦଶପଲ୍ଲା", "ଗଣିଆ", "ଖଣ୍ଡପଡ଼ା", "ନୟାଗଡ଼", "ନୂଆଗାଁ", "ଓଡ଼ଗାଁ", "ରଣପୁର"],
             "ନୂଆପଡ଼ା": ["ବୋଡ଼େନ", "ଯୋଙ୍କ", "ଖଡ଼ିଆଳ", "କୋମନା", "ନୂଆପଡ଼ା", "ସିନାପାଲି"],
-            "ପୁରୀ": ["ଅସ୍ତରଙ୍ଗ", "ବ୍ରହ୍ମଗିରି", "ଚନ୍ଦନପୁର", "ଡେଲାଙ୍ଗ", "ଗୋପ", "କାକଟପୁର", "କଣାସ", "କୃଷ୍ଣପ୍ରସାଦ", "ନିମାପଡ଼ା", "ପିପିଲି", "ପୁରୀ ସଦର", "ସତ୍ୟବାଦୀ"],
+            "ପୁରୀ": ["ଅସ୍ତରଙ୍g", "ବ୍ରହ୍ମଗିରି", "ଚନ୍ଦନପୁର", "ଡେଲାଙ୍g", "ଗୋପ", "କାକଟପୁର", "କଣାସ", "କୃଷ୍ଣପ୍ରସାଦ", "ନିମାପଡ଼ା", "ପିପିଲି", "ପୁରୀ ସଦର", "ସତ୍ୟବାଦୀ"],
             "ରାୟଗଡ଼ା": ["ବିଷମକଟକ", "ଚନ୍ଦ୍ରପୁର", "ଗୁଣୁପୁର", "କାଶୀପୁର", "କୋଲନରା", "ମୁନିଗୁଡ଼ା", "ପଦ୍ମପୁର", "ରାମନଗୁଡ଼ା", "ରାୟଗଡ଼ା"],
-            "ସମ୍ବଲପୁର": ["ବରମୁରା", "ଧନକଉଡ଼ା", "ଜମନକିରା", "ଯୁଯୁମୁରା", "କୁଚିଣ୍ଡା", "ମାନେଶ୍ୱର", "ନକ୍ଟିଦେଉଳ", "ରେଢ଼ାଖୋଲ", "ରେଙ୍ଗାଲି"],
-            "ସୁବର୍ଣ୍ଣପୁର (ସୋନପୁର)": ["ବୀରମହାରାଜପୁର", "ବିନିକା", "ଡୁଙ୍ଗୁରିପାଲି", "ରାମପୁର", "ସୋନପୁର", "ତରଭା", "ଉଲୁଣ୍ଡା"],
-            "ସୁନ୍ଦରଗଡ଼": ["ବାଲିଶଙ୍କରା", "ବଡ଼ଗାଁ", "ବିଶ୍ରା", "ବଣାଇ", "ହେମଗିରି", "ଗୁରୁଣ୍ଡିଆ", "କୋଇଡ଼ା", "କୁଆରମୁଣ୍ଡା", "ଲାଠିକଟା", "ଲହୁଣୀପଡ଼ା", "ଲେଫ୍ରିପଡ଼ା", "ନୂଆଗାଁ", "ରାଜଗାଙ୍ଗପୁର", "ସବଡେଗା", "ସୁନ୍ଦରଗଡ଼", "ଟାଙ୍ଗରପାଲି"]
+            "ସମ୍ବଲପୁର": ["ବରମୁରା", "ଧନକଉଡ଼ା", "ଜମନକିରା", "ଯୁଯୁମୁରା", "କୁଚିଣ୍ଡା", "ମାନେଶ୍ୱର", "ନକ୍ଟିଦେଉଳ", "ରେଢ଼ାଖୋଲ", "ରେଙ୍gାଲି"],
+            "ସୁବର୍ଣ୍ଣପୁର (ସୋନପୁର)": ["ବୀରମହାରାଜପୁର", "ବିନିକା", "ଡୁଙ୍gୁରିପାଲି", "ରାମପୁର", "ସୋନପୁର", "ତରଭା", "ଉଲୁଣ୍ଡା"],
+            "ସୁନ୍ଦରଗଡ଼": ["ବାଲିଶଙ୍କରା", "ବଡ଼ଗାଁ", "ବିଶ୍ରା", "ବଣାଇ", "ହେମଗିରି", "ଗୁରୁଣ୍ଡିଆ", "କୋଇଡ଼ା", "କୁଆରମୁଣ୍ଡା", "ଲାଠିକଟା", "ଲହୁଣୀପଡ଼ା", "ଲେଫ୍ରିପଡ଼ା", "ନୂଆଗାଁ", "ରାଜଗାଙ୍gପୁର", "ସବଡେଗା", "ସୁନ୍ଦରଗଡ଼", "ଟାଙ୍gରପାଲି"]
         };
         
         const odiaDigits = ['୦', '୧', '୨', '୩', '୪', '୫', '୬', '୭', '୮', '୯'];
@@ -299,7 +325,7 @@
         let schoolData = {};
         let students = [];
 
-        // --- Get All DOM Elements (Same as before) ---
+        // --- Get All DOM Elements ---
         const mainTitle = document.getElementById('mainTitle');
         const schoolInfoDisplay = document.getElementById('schoolInfoDisplay');
         const schoolSetupSection = document.getElementById('schoolSetupSection');
@@ -323,10 +349,58 @@
         const shareSection = document.getElementById('shareSection');
         const exportBtn = document.getElementById('exportBtn');
         const editBtn = document.getElementById('editBtn'); 
+        const clearDataBtn = document.getElementById('clearDataBtn');
         const studentListDiv = document.getElementById('studentList');
         const previewTitle = document.getElementById('previewTitle');
 
-        // --- PREVENT ACCIDENTAL BACK BUTTON (Same as before) ---
+
+        // --- Image Compression Function ---
+        function compressImage(file, maxWidth = 800, quality = 0.7) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onerror = reject;
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onerror = reject;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxWidth) {
+                            height = (maxWidth / width) * height;
+                            width = maxWidth;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                        resolve(compressedDataUrl);
+                    };
+                };
+            });
+        }
+        
+        // --- Helper to convert Data URL to Blob for zipping ---
+        function dataUrlToBlob(dataUrl) {
+            const parts = dataUrl.split(';base64,');
+            const contentType = parts[0].split(':')[1];
+            const raw = window.atob(parts[1]);
+            const rawLength = raw.length;
+            const uInt8Array = new Uint8Array(rawLength);
+            for (let i = 0; i < rawLength; ++i) {
+                uInt8Array[i] = raw.charCodeAt(i);
+            }
+            return new Blob([uInt8Array], { type: contentType });
+        }
+
+        // --- PREVENT ACCIDENTAL BACK BUTTON ---
         window.addEventListener('beforeunload', (e) => {
             if (students.length > 0 || schoolNameInput.value) {
                 e.preventDefault();
@@ -335,7 +409,7 @@
             }
         });
         
-        // --- Odia Date Conversion Function (Same as before) ---
+        // --- Odia Date Conversion Function ---
         function convertToOdiaDate(dateString) {
             if (!dateString) return '';
             try {
@@ -351,7 +425,7 @@
             }
         }
 
-        // --- 0. POPULATE DISTRICTS & BLOCKS (Same as before) ---
+        // --- 0. POPULATE DISTRICTS & BLOCKS ---
         function populateDistricts() {
             const districts = Object.keys(odishaData);
             districts.forEach(district => {
@@ -361,8 +435,8 @@
                 districtSelect.appendChild(option);
             });
         }
-        districtSelect.addEventListener('change', () => {
-            const selectedDistrict = districtSelect.value;
+        
+        function updateBlockDropdown(selectedDistrict) {
             blockSelect.innerHTML = '<option value="">ବ୍ଲକ ବାଛନ୍ତୁ</option>';
             if (selectedDistrict && odishaData[selectedDistrict]) {
                 odishaData[selectedDistrict].forEach(block => {
@@ -372,37 +446,77 @@
                     blockSelect.appendChild(option);
                 });
             }
+        }
+        
+        districtSelect.addEventListener('change', () => {
+             updateBlockDropdown(districtSelect.value);
         });
 
-        // --- 1. SAVE SCHOOL SETUP (Same as before) ---
-        saveSetupBtn.addEventListener('click', () => {
+        // --- 1. SAVE SCHOOL SETUP ---
+        saveSetupBtn.addEventListener('click', async () => {
             const signatureFile = hmSignatureInput.files[0];
-            if (!schoolNameInput.value || !districtSelect.value || !blockSelect.value || !udiseInput.value || !signatureFile) {
-                alert('Please fill in all School Name, District, Block, UDISE Code, and upload a Signature.');
+            if (!schoolNameInput.value || !districtSelect.value || !blockSelect.value || !udiseInput.value) {
+                alert('Please fill in all School Name, District, Block, and UDISE Code.');
                 return;
             }
+            if (!signatureFile && !schoolData.signatureDataUrl) {
+                 alert('Please upload a Signature.');
+                 return;
+            }
+
+            let signatureDataUrl = schoolData.signatureDataUrl; // Keep old one if not changed
+            let signatureFileName = schoolData.signatureFileName;
+            
+            if (signatureFile) {
+                 try {
+                    signatureDataUrl = await compressImage(signatureFile, 400, 0.7); // Compress
+                    signatureFileName = signatureFile.name;
+                 } catch (e) {
+                     console.error("Error compressing signature file:", e);
+                     alert("Could not read signature file. Please try again.");
+                     return;
+                 }
+            }
+
             schoolData = {
                 schoolName: schoolNameInput.value,
                 block: blockSelect.value,
                 district: districtSelect.value,
                 pincode: pincodeInput.value,
                 udise: udiseInput.value,
-                signatureFile: signatureFile,
-                signatureFileName: signatureFile.name
+                signatureDataUrl: signatureDataUrl, 
+                signatureFileName: signatureFileName
             };
-            schoolInfoDisplay.innerHTML = `
-                <p><strong>School:</strong> ${schoolData.schoolName}</p>
-                <p><strong>UDISE:</strong> ${schoolData.udise}</p>
-                <p><strong>Block:</strong> ${schoolData.block}, <strong>District:</strong> ${schoolData.district}</p>
-            `;
-            schoolInfoDisplay.style.display = 'block';
+            
+            try {
+                localStorage.setItem('schoolData', JSON.stringify(schoolData));
+            } catch (e) {
+                alert('Could not save school data. Storage might be full.');
+            }
+            
+            showSchoolInfoDisplay();
             schoolSetupSection.style.display = 'none';
             entryForm.style.display = 'block';
             mainTitle.textContent = schoolData.schoolName;
         });
 
-        // --- 2. ADD STUDENT (Same as before) ---
-        addBtn.addEventListener('click', () => {
+        // MODIFIED: Helper to show school info (now with edit button)
+        function showSchoolInfoDisplay() {
+             schoolInfoDisplay.innerHTML = `
+                <div id="schoolInfoText">
+                    <p><strong>School:</strong> ${schoolData.schoolName}</p>
+                    <p><strong>UDISE:</strong> ${schoolData.udise}</p>
+                    <p><strong>Block:</strong> ${schoolData.block}, <strong>District:</strong> ${schoolData.district}</p>
+                </div>
+                <button id="editSchoolBtn">Edit School</button>
+            `;
+            // Set display to flex (to match CSS)
+            schoolInfoDisplay.style.display = 'flex'; 
+        }
+
+
+        // --- 2. ADD STUDENT ---
+        addBtn.addEventListener('click', async () => {
             const classVal = classSelect.value.trim();
             const rollVal = rollInput.value.trim();
             const originalPhoto = photoInput.files[0];
@@ -418,61 +532,76 @@
                 return;
             }
             
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const photoDataUrl = e.target.result;
-                const odiaDOB = convertToOdiaDate(dobVal);
-                
-                const firstName = nameVal.split(' ')[0] || 'student';
-                const safeFirstName = firstName.replace(/[^a-zA-Z0-9]/g, '');
-                const extension = originalPhoto.name.split('.').pop().toLowerCase();
-                const newFilename = `${safeFirstName}_${rollVal}.${extension}`;
-                
-                const studentId = Date.now();
-                const student = {
-                    id: studentId,
-                    name: nameVal,
-                    class: classVal,
-                    dob: dobVal,
-                    dobOdia: odiaDOB,
-                    roll: rollVal,
-                    phone: phoneInput.value,
-                    photoFile: originalPhoto,
-                    photoDataUrl: photoDataUrl,
-                    newPhotoName: newFilename
-                };
-                students.push(student);
-                
-                const studentDiv = document.createElement('div');
-                studentDiv.dataset.studentId = studentId;
-                studentDiv.innerHTML = `
-                    <img src="${student.photoDataUrl}" class="list-preview-img" alt="Photo">
-                    <div class="student-info">
-                        <span class="student-main-details"><strong>${student.name}</strong> (Class: ${student.class}, Roll: ${student.roll})</span>
-                        <span class="student-sub-details">DOB: ${student.dobOdia || 'N/A'}</span>
-                    </div>
-                    <button class="deleteBtn" data-id="${studentId}">Delete</button>
-                `;
-                studentListDiv.appendChild(studentDiv);
-                
-                // Clear form
-                nameInput.value = '';
-                classSelect.value = '';
-                rollInput.value = '';
-                dobInput.value = '';
-                phoneInput.value = '';
-                photoInput.value = '';
-                photoPreview.src = '';
-                photoPreview.style.display = 'none';
-                nameInput.focus();
-                
-                completeBtn.disabled = false;
-            };
+            let photoDataUrl;
+            try {
+                 photoDataUrl = await compressImage(originalPhoto, 800, 0.7);
+            } catch (e) {
+                 console.error("Error compressing photo file:", e);
+                 alert("Could not read student photo. Please try again.");
+                 return;
+            }
+
+            const odiaDOB = convertToOdiaDate(dobVal);
             
-            reader.readAsDataURL(originalPhoto);
+            const firstName = nameVal.split(' ')[0] || 'student';
+            const safeFirstName = firstName.replace(/[^a-zA-Z0-9]/g, '');
+            const newFilename = `${safeFirstName}_${rollVal}.jpg`;
+            
+            const studentId = Date.now();
+            const student = {
+                id: studentId,
+                name: nameVal,
+                class: classVal,
+                dob: dobVal,
+                dobOdia: odiaDOB,
+                roll: rollVal,
+                phone: phoneInput.value,
+                photoDataUrl: photoDataUrl, 
+                newPhotoName: newFilename
+            };
+            students.push(student);
+            
+            try {
+                localStorage.setItem('students', JSON.stringify(students));
+            } catch (e) {
+                 console.error("Error saving student data:", e);
+                 alert("Could not save student data. Storage might be full.");
+                 students.pop(); 
+                 return;
+            }
+            
+            renderStudent(student); 
+            
+            // Clear form
+            nameInput.value = '';
+            classSelect.value = '';
+            rollInput.value = '';
+            dobInput.value = '';
+            phoneInput.value = '';
+            photoInput.value = '';
+            photoPreview.src = '';
+            photoPreview.style.display = 'none';
+            nameInput.focus();
+            
+            completeBtn.disabled = false;
         });
         
-        // --- STUDENT PHOTO PREVIEW (in form) (Same as before) ---
+        // --- Helper to render a single student to the list ---
+        function renderStudent(student) {
+             const studentDiv = document.createElement('div');
+            studentDiv.dataset.studentId = student.id;
+            studentDiv.innerHTML = `
+                <img src="${student.photoDataUrl}" class="list-preview-img" alt="Photo">
+                <div class="student-info">
+                    <span class="student-main-details"><strong>${student.name}</strong> (Class: ${student.class}, Roll: ${student.roll})</span>
+                    <span class="student-sub-details">DOB: ${student.dobOdia || 'N/A'}</span>
+                </div>
+                <button class="deleteBtn" data-id="${student.id}">Delete</button>
+            `;
+            studentListDiv.appendChild(studentDiv);
+        }
+
+        // --- STUDENT PHOTO PREVIEW (in form) ---
         photoInput.addEventListener('change', () => {
             const file = photoInput.files[0];
             if (file) {
@@ -484,11 +613,14 @@
             }
         });
 
-        // --- 2b. DELETE STUDENT (Same as before) ---
+        // --- 2b. DELETE STUDENT ---
         studentListDiv.addEventListener('click', (e) => {
             if (e.target.classList.contains('deleteBtn')) {
                 const studentId = e.target.dataset.id;
                 students = students.filter(s => s.id.toString() !== studentId);
+                
+                localStorage.setItem('students', JSON.stringify(students));
+                
                 e.target.closest('div[data-student-id]').remove();
                 
                 if (students.length === 0) {
@@ -497,7 +629,7 @@
             }
         });
 
-        // --- 3. COMPLETE ADDING (Same as before) ---
+        // --- 3. COMPLETE ADDING ---
         completeBtn.addEventListener('click', () => {
             if (students.length === 0) return;
             entryForm.style.display = 'none';
@@ -508,41 +640,55 @@
             studentListDiv.classList.add('step-3-preview');
         });
 
-        // --- 3b. EDIT BUTTON (Same as before) ---
+        // --- 3b. EDIT BUTTON (from Step 3) ---
         editBtn.addEventListener('click', () => {
             shareSection.style.display = 'none';
             previewTitle.style.display = 'none';
             entryForm.style.display = 'block';
-            schoolInfoDisplay.style.display = 'block';
+            // MODIFIED: Set display to flex
+            schoolInfoDisplay.style.display = 'flex'; 
             studentListDiv.classList.remove('step-3-preview');
         });
+        
+        // --- NEW: EDIT SCHOOL BUTTON (from Step 2 header) ---
+        schoolInfoDisplay.addEventListener('click', (e) => {
+            if (e.target.id === 'editSchoolBtn') {
+                // Hide Step 2
+                entryForm.style.display = 'none';
+                schoolInfoDisplay.style.display = 'none';
+                
+                // Show Step 1
+                schoolSetupSection.style.display = 'block';
+                // The form is already pre-filled by loadData(),
+                // so the user can just edit and re-save.
+            }
+        });
 
-        // --- 4. EXPORT "SMART" FUNCTION (MODIFIED) ---
+        // --- 4. EXPORT "SMART" FUNCTION ---
         exportBtn.addEventListener('click', async () => {
             if (students.length === 0) return;
 
             exportBtn.textContent = 'Processing... Please Wait...';
             exportBtn.disabled = true;
             let zipBlob;
-            const zipFileName = 'student_id_data.zip';
+            const safeUdise = schoolData.udise.replace(/[^a-zA-Z0-9]/g, '_');
+            const zipFileName = `student_data_${safeUdise}.zip`;
 
             try {
-                // --- 4a. Generate CSV data (NEW ODIA HEADERS) ---
+                // --- 4a. Generate CSV data ---
                 const headers = [
                     'ନାମ', 'ଶ୍ରେଣୀ', 'ଜନ୍ମ ତାରିଖ', 'ରୋଲ୍ ନମ୍ବର', 'ଫୋନ୍ ନମ୍ବର', 'ଫଟୋ ପଥ',
                     'ବିଦ୍ୟାଳୟର ନାମ', 'ବ୍ଲକ', 'ଜିଲ୍ଲା', 'ପିନକୋଡ୍', 'UDISE କୋଡ୍', 'ଦସ୍ତଖତ ଫାଇଲ୍'
                 ];
                 
-                // --- NEW: Add UTF-8 BOM ---
                 let csvContent = '\uFEFF' + headers.join(',') + '\n';
                 
                 students.forEach(student => {
                     const photoPath = `e:\\photos\\${schoolData.udise}\\${student.newPhotoName}`;
-                    // Data values already include Odia, this is perfect.
                     const row = [
                         `"${student.name}"`,
                         `"${student.class}"`,
-                        `"${student.dob}"`, // Using standard YYYY-MM-DD for the data, as it's machine-readable
+                        `"${student.dob}"`, 
                         `"${student.roll}"`,
                         `"${student.phone}"`,
                         `"${photoPath}"`,
@@ -558,11 +704,14 @@
 
                 // --- 4b. Create Zip and add all files ---
                 const zip = new JSZip();
-                // We must use { encoding: "UTF-8" } here when adding the file
-                zip.file('student_data.csv', csvContent); // JSZip handles UTF-8 by default
-                zip.file(schoolData.signatureFileName, schoolData.signatureFile);
+                zip.file('student_data.csv', csvContent); 
+                
+                const sigBlob = dataUrlToBlob(schoolData.signatureDataUrl);
+                zip.file(schoolData.signatureFileName, sigBlob);
+                
                 students.forEach(student => {
-                    zip.file(student.newPhotoName, student.photoFile);
+                    const photoBlob = dataUrlToBlob(student.photoDataUrl);
+                    zip.file(student.newPhotoName, photoBlob);
                 });
 
                 // --- 4c. Generate the Zip Blob ---
@@ -600,17 +749,9 @@
             }
         });
 
-        // --- 5. Helper function to trigger download (MODIFIED FOR UTF-8) ---
+        // --- 5. Helper function to trigger download ---
         function downloadBlob(content, fileName, contentType) {
-            // Check if we are downloading a CSV (not used in main flow, but good for testing)
-            // The main flow downloads a zip, which is fine.
-            let blob;
-            if (contentType.includes('csv')) {
-                 // Add BOM for CSV downloads
-                blob = new Blob(['\uFEFF' + content], { type: contentType + ';charset=utf-8;' });
-            } else {
-                blob = new Blob([content], { type: contentType });
-            }
+            let blob = new Blob([content], { type: contentType });
             
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
@@ -622,8 +763,51 @@
             document.body.removeChild(link);
         }
         
-        // --- 6. Initialize District Dropdown (Same as before) ---
-        populateDistricts();
+        // --- 6. Clear Data Button ---
+        clearDataBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all saved school and student data? This cannot be undone.')) {
+                localStorage.removeItem('schoolData');
+                localStorage.removeItem('students');
+                location.reload();
+            }
+        });
+
+        // --- 7. Load Data on Page Start ---
+        function loadData() {
+            populateDistricts(); // Always populate districts
+            
+            const savedSchoolData = localStorage.getItem('schoolData');
+            const savedStudents = localStorage.getItem('students');
+            
+            if (savedSchoolData) {
+                schoolData = JSON.parse(savedSchoolData);
+                
+                // Pre-fill Step 1 form in case user wants to edit
+                schoolNameInput.value = schoolData.schoolName;
+                districtSelect.value = schoolData.district;
+                updateBlockDropdown(schoolData.district);
+                blockSelect.value = schoolData.block;
+                pincodeInput.value = schoolData.pincode;
+                udiseInput.value = schoolData.udise;
+                
+                // Hide setup, show entry form
+                schoolSetupSection.style.display = 'none';
+                entryForm.style.display = 'block';
+                showSchoolInfoDisplay();
+                mainTitle.textContent = schoolData.schoolName;
+            }
+            
+            if (savedStudents) {
+                students = JSON.parse(savedStudents);
+                if (students.length > 0) {
+                    students.forEach(student => renderStudent(student));
+                    completeBtn.disabled = false;
+                }
+            }
+        }
+        
+        // --- 8. Initialize ---
+        window.addEventListener('DOMContentLoaded', loadData);
 
     </script>
 
