@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ID Card Data Entry</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #0056b3;
+        }
+        #entryForm {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        div {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        input[type="text"],
+        input[type="date"],
+        input[type="tel"],
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Important for 100% width */
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        #addBtn {
+            background-color: #007bff;
+            color: white;
+        }
+        #downloadCsvBtn {
+            background-color: #28a745;
+            color: white;
+        }
+        /* Changed button styling */
+        #shareZipBtn {
+            background-color: #ffc107;
+            color: #333;
+        }
+        #studentList {
+            margin-top: 20px;
+        }
+        #studentList div {
+            background: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            border: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #studentList span {
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>ID Card Data Entry</h1>
+
+    <div id="entryForm">
+        <div>
+            <label for="name">Full Name:</label>
+            <input type="text" id="name" required>
+        </div>
+        <div>
+            <label for="class">Class (e.g., "4" or "LKG"):</label>
+            <input type="text" id="class" placeholder="4">
+        </div>
+        <div>
+            <label for="roll">Roll No (e.g., "2" or "02"):</label>
+            <input type="text" id="roll" placeholder="2">
+        </div>
+        <div>
+            <label for="dob">Date of Birth:</label>
+            <input type="date" id="dob">
+        </div>
+        <div>
+            <label for="phone">Phone No:</label>
+            <input type="tel" id="phone">
+        </div>
+        <div>
+            <label for="photo">Student Photo:</label>
+            <input type="file" id="photo" accept="image/png, image/jpeg">
+        </div>
+        
+        <button id="addBtn">Add Student</button>
+        <button id="downloadCsvBtn">Download CSV</button>
+        <button id="shareZipBtn">Share Photos (.zip)</button>
+    </div>
+
+    <div id="studentList">
+        <h3>Added Students:</h3>
+        </div>
+
+    <script>
+        // This array will hold all our student objects
+        let students = [];
+
+        // Get elements
+        const addBtn = document.getElementById('addBtn');
+        const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+        const shareZipBtn = document.getElementById('shareZipBtn'); // Updated ID
+        const studentListDiv = document.getElementById('studentList');
+
+        // Form fields (all same as before)
+        const nameInput = document.getElementById('name');
+        const classInput = document.getElementById('class');
+        const dobInput = document.getElementById('dob');
+        const rollInput = document.getElementById('roll');
+        const phoneInput = document.getElementById('phone');
+        const photoInput = document.getElementById('photo');
+
+        // 1. Add Student Function (Unchanged)
+        addBtn.addEventListener('click', () => {
+            const classVal = classInput.value.trim();
+            const rollVal = rollInput.value.trim();
+            const originalPhoto = photoInput.files[0];
+            if (!nameInput.value || !classVal || !rollVal) {
+                alert('Please fill in at least Name, Class, and Roll No.');
+                return;
+            }
+            if (!originalPhoto) {
+                alert('Please upload a photo for the student.');
+                return;
+            }
+            const extension = originalPhoto.name.split('.').pop().toLowerCase();
+            const newFilename = `${classVal}${rollVal}.${extension}`;
+            const student = {
+                name: nameInput.value,
+                class: classVal,
+                dob: dobInput.value,
+                roll: rollVal,
+                phone: phoneInput.value,
+                photoFile: originalPhoto,
+                newPhotoName: newFilename
+            };
+            students.push(student);
+            const studentDiv = document.createElement('div');
+            studentDiv.innerHTML = `
+                <span><strong>${student.name}</strong> (Class: ${student.class}, Roll: ${student.roll})</span>
+                <span>Photo: ${student.newPhotoName}</span>
+            `;
+            studentListDiv.appendChild(studentDiv);
+            nameInput.value = '';
+            classInput.value = '';
+            dobInput.value = '';
+            rollInput.value = '';
+            phoneInput.value = '';
+            photoInput.value = '';
+            nameInput.focus();
+        });
+
+        // 2. Download CSV Function (Unchanged)
+        downloadCsvBtn.addEventListener('click', () => {
+            if (students.length === 0) {
+                alert('No students added yet!');
+                return;
+            }
+            const headers = ['Name', 'Class', 'DOB', 'RollNo', 'Phone', 'Photo'];
+            let csvContent = headers.join(',') + '\n';
+            students.forEach(student => {
+                const row = [
+                    `"${student.name}"`,
+                    `"${student.class}"`,
+                    `"${student.dob}"`,
+                    `"${student.roll}"`,
+                    `"${student.phone}"`,
+                    `"${student.newPhotoName}"`
+                ];
+                csvContent += row.join(',') + '\n';
+            });
+            downloadBlob(csvContent, 'student_data.csv', 'text/csv;charset=utf-8;');
+        });
+
+        // --- 3. UPDATED: Share ZIP Function ---
+        shareZipBtn.addEventListener('click', async () => { // Made async
+            if (students.length === 0) {
+                alert('No students added yet!');
+                return;
+            }
+
+            // --- 3a. Generate the Zip Blob ---
+            const zip = new JSZip();
+            students.forEach(student => {
+                zip.file(student.newPhotoName, student.photoFile);
+            });
+
+            let blob;
+            try {
+                // Show a loading message if needed
+                shareZipBtn.textContent = 'Zipping... Please Wait...';
+                blob = await zip.generateAsync({ type: 'blob' });
+            } catch (err) {
+                console.error('Error creating zip file:', err);
+                alert('Error creating zip file.');
+                shareZipBtn.textContent = 'Share Photos (.zip)'; // Reset button text
+                return;
+            }
+            shareZipBtn.textContent = 'Share Photos (.zip)'; // Reset button text
+
+            // --- 3b. Create a File object from the Blob ---
+            const zipFile = new File([blob], 'student_photos.zip', {
+                type: 'application/zip',
+                lastModified: new Date().getTime()
+            });
+            
+            const shareData = {
+                title: 'Student Photos',
+                text: 'Student photos for ID card generation.',
+                files: [zipFile] // The file to be shared
+            };
+
+            // --- 3c. Check if Web Share API is available and can share files ---
+            if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                try {
+                    // --- 3d. Try to Share ---
+                    await navigator.share(shareData);
+                    console.log('Photos shared successfully!');
+                } catch (err) {
+                    // This handles if the user clicks "Cancel" on the share dialog
+                    if (err.name !== 'AbortError') {
+                        console.error('Error sharing:', err);
+                        alert('Error sharing. The file will be downloaded instead.');
+                        // --- 3e. Fallback to download ---
+                        downloadBlob(blob, 'student_photos.zip', 'application/zip');
+                    }
+                }
+            } else {
+                // --- 3e. Fallback for non-supporting browsers (like file:// or HTTP) ---
+                alert('Sharing is not supported on this browser (it may require HTTPS). The .zip file will be downloaded instead.');
+                downloadBlob(blob, 'student_photos.zip', 'application/zip');
+            }
+        });
+
+
+        // 4. Helper function to trigger any file download (Unchanged)
+        function downloadBlob(content, fileName, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', fileName);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+
+</body>
+</html>
