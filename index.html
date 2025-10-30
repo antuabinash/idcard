@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ID Card Data Entry</title>
-    <!-- JSZip library for creating .zip files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <style>
@@ -20,7 +19,6 @@
         }
         h1 { color: #0056b3; }
         
-        /* Main card styles for each step */
         #schoolSetupSection, #entryForm, #shareSection {
             max-width: 600px;
             margin: 0 auto;
@@ -29,8 +27,6 @@
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
-        
-        /* Header in Step 2 showing school info */
         #schoolInfoDisplay {
             max-width: 600px;
             margin: -10px auto 15px auto;
@@ -52,8 +48,6 @@
             margin-bottom: 5px;
             font-weight: 600;
         }
-        
-        /* Form inputs and dropdowns */
         input[type="text"],
         input[type="date"],
         input[type="tel"],
@@ -65,16 +59,12 @@
             border-radius: 4px;
             box-sizing: border-box; 
             background-color: #fff;
-            font-size: 16px; /* Ensure readability on mobile */
         }
-        
-        /* Odia placeholder style */
         ::placeholder {
             color: #aaa;
             opacity: 1; /* Firefox */
         }
         
-        /* Button styles */
         button {
             width: 100%;
             padding: 12px;
@@ -85,13 +75,12 @@
             font-weight: 600;
             margin-top: 10px;
         }
-        /* Disabled button style */
         button:disabled {
             background-color: #ccc;
             cursor: not-allowed;
         }
         
-        /* Specific Button Colors */
+        /* Button Colors */
         #saveSetupBtn, #addBtn {
             background-color: #007bff;
             color: white;
@@ -100,22 +89,21 @@
             background-color: #ffc107;
             color: #333;
         }
-        #exportBtn { /* "Download / Share" */
+        #exportBtn {
             background-color: #28a745;
             color: white;
         }
-        #editBtn { /* "Edit" */
+        #editBtn { /* "Edit" Button */
             background-color: #6c757d;
             color: white;
-            margin-top: 0; /* Placed after export */
+            margin-top: 0;
         }
 
-        /* Student List Styling */
+        /* --- NEW: Student List Styling --- */
         #studentList {
             max-width: 600px;
             margin: 20px auto 0 auto;
         }
-        /* Each student row item */
         #studentList div {
             background: #fff;
             padding: 10px 15px;
@@ -126,8 +114,7 @@
             justify-content: space-between;
             align-items: center; /* Vertically center items */
         }
-        
-        /* Photo preview in the list */
+        /* New class for the photo in the list */
         .list-preview-img {
             width: 40px;
             height: 40px;
@@ -136,24 +123,19 @@
             margin-right: 15px;
             flex-shrink: 0;
         }
-        /* Text info in the list */
+        /* New class to hold student text info */
         .student-info {
             flex-grow: 1; /* Take up available space */
             display: flex;
             flex-direction: column;
             font-size: 14px;
         }
-        .student-info .student-main-details {
-            font-weight: 600;
-            color: #333;
-        }
-        .student-info .student-sub-details {
+        .student-sub-details {
             font-size: 12px;
             color: #555;
             margin-top: 2px;
         }
         
-        /* Delete button in the list */
         .deleteBtn {
             background-color: #dc3545;
             color: white;
@@ -165,7 +147,7 @@
             margin-top: 0;
             flex-shrink: 0;
         }
-        /* Hides delete button when in Step 3 */
+        /* NEW: Hides delete button when in Step 3 */
         #studentList.step-3-preview .deleteBtn {
             display: none;
         }
@@ -184,9 +166,9 @@
 </head>
 <body>
 
-    <h1 id="mainTitle">ID Card Data Entry</h1>
+    <h1 id="mainTitle">ID Card Data Entry
+    Abinash Mahapatra, 8594866511</h1>
 
-    <!-- STEP 1: SCHOOL SETUP (Visible by default) -->
     <div id="schoolSetupSection">
         <h3>Step 1: School Details</h3>
         <div>
@@ -202,7 +184,7 @@
         <div>
             <label for="block">Block (ବ୍ଲକ):</label>
             <select id="blockSelect" required>
-                <option value="">ପ୍ରଥମେ ଜିଲ୍ଲା ବାଛନ୍ତୁ</option>
+                <option value="">ବ୍ଲକ ବାଛନ୍ତୁ</option>
             </select>
         </div>
         <div>
@@ -220,10 +202,8 @@
         <button id="saveSetupBtn">Save & Add Students</button>
     </div>
 
-    <!-- Header for Step 2 (Hidden by default) -->
     <div id="schoolInfoDisplay" style="display:none;"></div>
     
-    <!-- STEP 2: STUDENT ENTRY (Hidden by default) -->
     <div id="entryForm" style="display:none;">
         <h3>Step 2: Add Students</h3>
         <div>
@@ -231,29 +211,29 @@
             <input type="text" id="name" placeholder="ପୂରା ନାମ" required>
         </div>
         <div>
-            <label for="class">Class (ଶ୍ରେଣୀ):</label>
+            <label for="class">Class):</label>
             <select id="class" required>
                 <option value="">ଶ୍ରେଣୀ ବାଛନ୍ତୁ</option>
-                <option value="୦">୦</option>
-                <option value="୧">୧</option>
-                <option value="୨">୨</option>
-                <option value="୩">୩</option>
-                <option value="୪">୪</option>
-                <option value="୫">୫</option>
-                <option value="୬">୬</option>
-                <option value="୭">୭</option>
-                <option value="୮">୮</option>
-                <option value="୯">୯</option>
-                <option value="୧୦">୧୦</option>
+                <option value="ବଟିକା">ବଟିକା</option>
+                <option value="ପ୍ରଥମ">ପ୍ରଥମ</option>
+                <option value="ଦ୍ଵିତୀୟ">ଦ୍ଵିତୀୟ</option>
+                <option value="ତୃତୀୟ">ତୃତୀୟ</option>
+                <option value="ଚତୁର୍ଥ">ଚତୁର୍ଥ</option>
+                <option value="ପଞ୍ଚମ">ପଞ୍ଚମ</option>
+                <option value="ଷଷ୍ଠ">ଷଷ୍ଠ</option>
+                <option value="ସପ୍ତମ">ସପ୍ତମ</option>
+                <option value="ଅଷ୍ଟମ">ଅଷ୍ଟମ</option>
+                <option value="ନବମ">ନବମ</option>
+                <option value="ଦଶମ">ଦଶମ</option>
             </select>
         </div>
         <div>
-            <label for="roll">Roll No (ରୋଲ୍ ନମ୍ବର):</label>
+            <label for="roll">Roll No:</label>
             <input type="text" id="roll" placeholder="ରୋଲ୍ ନମ୍ବର" required>
         </div>
         <div>
             <label for="dob">Date of Birth:</label>
-            <input type="date" id="dob">
+            <input type="date" id="dob"placeholder="ଜନ୍ମ ତାରିଖ" required>
         </div>
         <div>
             <label for="phone">Phone No:</label>
@@ -262,32 +242,25 @@
         <div>
             <label for="photo">Student Photo:</label>
             <input type="file" id="photo" accept="image/png, image/jpeg">
-            <!-- Photo preview for the form -->
             <img id="photoPreview" src="" alt="Student Preview">
         </div>
         
         <button id="addBtn">Add Student</button>
-        <!-- "Submit" button, disabled by default -->
         <button id="completeBtn" disabled>Submit</button> 
     </div>
 
-    <!-- Student Preview List (Hidden by default) -->
     <h3 id="previewTitle" style="display:none;">Student Preview:</h3>
     <div id="studentList">
-        <!-- Students will be listed here with delete buttons -->
-    </div>
+        </div>
 
-    <!-- STEP 3: EXPORT SECTION (Hidden by default) -->
     <div id="shareSection" style="display:none;">
         <h3>Step 3: Export Data</h3>
-        <!-- Button order as requested -->
         <button id="exportBtn">Download / Share All Data</button>
         <button id="editBtn">Edit</button>
     </div>
 
     <script>
         // --- ODIA DATA (Districts & Blocks) ---
-        // This object contains all the districts and their blocks
         const odishaData = {
             "ଅନୁଗୁଳ": ["ଅନୁଗୁଳ", "ଆଠମଲ୍ଲିକ", "ଛେଣ୍ଡିପଦା", "ତାଳଚେର", "ପାଲଲହଡ଼ା", "ବଅଁରପାଳ", "କିଶୋରନଗର", "କଣିହାଁ"],
             "ବଲାଙ୍ଗୀର": ["ଆଗଲପୁର", "ବଲାଙ୍ଗୀର", "ବେଲପଡ଼ା", "ବଙ୍ଗୋମୁଣ୍ଡା", "ଦେଓଗାଁ", "ଗୁଡଭେଲା", "ଖପ୍ରାଖୋଲ", "ଲୋଇସିଂହା", "ମୁରିବାହାଲ", "ପାଟଣାଗଡ଼", "ପୁଇଁତଳା", "ସଇଁତଳା", "ଟିଟିଲାଗଡ଼", "ତୁରେକେଲା"],
@@ -320,14 +293,13 @@
             "ସୁନ୍ଦରଗଡ଼": ["ବାଲିଶଙ୍କରା", "ବଡ଼ଗାଁ", "ବିଶ୍ରା", "ବଣାଇ", "ହେମଗିରି", "ଗୁରୁଣ୍ଡିଆ", "କୋଇଡ଼ା", "କୁଆରମୁଣ୍ଡା", "ଲାଠିକଟା", "ଲହୁଣୀପଡ଼ା", "ଲେଫ୍ରିପଡ଼ା", "ନୂଆଗାଁ", "ରାଜଗାଙ୍ଗପୁର", "ସବଡେଗା", "ସୁନ୍ଦରଗଡ଼", "ଟାଙ୍ଗରପାଲି"]
         };
         
-        // --- Odia Date Constants ---
         const odiaDigits = ['୦', '୧', '୨', '୩', '୪', '୫', '୬', '୭', '୮', '୯'];
         const odiaMonths = ['ଜାନୁଆରୀ', 'ଫେବୃଆରୀ', 'ମାର୍ଚ୍ଚ', 'ଅପ୍ରେଲ', 'ମଇ', 'ଜୁନ୍', 'ଜୁଲାଇ', 'ଅଗଷ୍ଟ', 'ସେପ୍ଟେମ୍ବର', 'ଅକ୍ଟୋବର', 'ନଭେମ୍ବର', 'ଡିସେମ୍ବର'];
 
-        let schoolData = {}; // Global object to hold school details
-        let students = [];    // Global array to hold students
+        let schoolData = {};
+        let students = [];
 
-        // --- Get All DOM Elements ---
+        // --- Get All DOM Elements (Same as before) ---
         const mainTitle = document.getElementById('mainTitle');
         const schoolInfoDisplay = document.getElementById('schoolInfoDisplay');
         const schoolSetupSection = document.getElementById('schoolSetupSection');
@@ -354,36 +326,32 @@
         const studentListDiv = document.getElementById('studentList');
         const previewTitle = document.getElementById('previewTitle');
 
-        // --- PREVENT ACCIDENTAL BACK BUTTON ---
-        // This warns the user if they try to leave the page after entering data
+        // --- PREVENT ACCIDENTAL BACK BUTTON (Same as before) ---
         window.addEventListener('beforeunload', (e) => {
             if (students.length > 0 || schoolNameInput.value) {
-                e.preventDefault(); // Required for most browsers
-                e.returnValue = ''; // Required for some older browsers
-                return ''; // Required for legacy browsers
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
             }
         });
         
-        // --- Odia Date Conversion Function ---
+        // --- Odia Date Conversion Function (Same as before) ---
         function convertToOdiaDate(dateString) {
             if (!dateString) return '';
             try {
                 const [year, month, day] = dateString.split('-');
                 if (!year || !month || !day) return '';
-                
-                // Convert each digit of year and day to Odia
                 const odiaYear = year.split('').map(d => odiaDigits[parseInt(d)]).join('');
                 const odiaDay = day.split('').map(d => odiaDigits[parseInt(d)]).join('');
                 const odiaMonthName = odiaMonths[parseInt(month) - 1];
-                
                 return `${odiaDay} ${odiaMonthName} ${odiaYear}`;
             } catch (e) {
                 console.error("Could not parse date:", dateString);
-                return ''; // Return empty if date is invalid
+                return '';
             }
         }
 
-        // --- 0. POPULATE DISTRICTS & BLOCKS ---
+        // --- 0. POPULATE DISTRICTS & BLOCKS (Same as before) ---
         function populateDistricts() {
             const districts = Object.keys(odishaData);
             districts.forEach(district => {
@@ -393,10 +361,9 @@
                 districtSelect.appendChild(option);
             });
         }
-        
         districtSelect.addEventListener('change', () => {
             const selectedDistrict = districtSelect.value;
-            blockSelect.innerHTML = '<option value="">ବ୍ଲକ ବାଛନ୍ତୁ</option>'; // Clear old blocks
+            blockSelect.innerHTML = '<option value="">ବ୍ଲକ ବାଛନ୍ତୁ</option>';
             if (selectedDistrict && odishaData[selectedDistrict]) {
                 odishaData[selectedDistrict].forEach(block => {
                     const option = document.createElement('option');
@@ -407,17 +374,13 @@
             }
         });
 
-        // --- 1. SAVE SCHOOL SETUP ---
+        // --- 1. SAVE SCHOOL SETUP (Same as before) ---
         saveSetupBtn.addEventListener('click', () => {
             const signatureFile = hmSignatureInput.files[0];
-            
-            // Validate all required school fields
             if (!schoolNameInput.value || !districtSelect.value || !blockSelect.value || !udiseInput.value || !signatureFile) {
                 alert('Please fill in all School Name, District, Block, UDISE Code, and upload a Signature.');
                 return;
             }
-            
-            // Store all school data
             schoolData = {
                 schoolName: schoolNameInput.value,
                 block: blockSelect.value,
@@ -427,30 +390,25 @@
                 signatureFile: signatureFile,
                 signatureFileName: signatureFile.name
             };
-            
-            // Populate the header for Step 2
             schoolInfoDisplay.innerHTML = `
                 <p><strong>School:</strong> ${schoolData.schoolName}</p>
                 <p><strong>UDISE:</strong> ${schoolData.udise}</p>
                 <p><strong>Block:</strong> ${schoolData.block}, <strong>District:</strong> ${schoolData.district}</p>
             `;
             schoolInfoDisplay.style.display = 'block';
-
-            // Show Step 2, Hide Step 1
             schoolSetupSection.style.display = 'none';
             entryForm.style.display = 'block';
-            mainTitle.textContent = schoolData.schoolName; // Update page title
+            mainTitle.textContent = schoolData.schoolName;
         });
 
-        // --- 2. ADD STUDENT (with Photo Preview) ---
+        // --- 2. ADD STUDENT (Same as before) ---
         addBtn.addEventListener('click', () => {
             const classVal = classSelect.value.trim();
             const rollVal = rollInput.value.trim();
             const originalPhoto = photoInput.files[0];
             const nameVal = nameInput.value.trim();
-            const dobVal = dobInput.value; // Get DOB
+            const dobVal = dobInput.value;
 
-            // Validation
             if (!nameVal || !classVal || !rollVal) {
                 alert('Please fill in at least Name, Class, and Roll No.');
                 return;
@@ -460,36 +418,31 @@
                 return;
             }
             
-            // Use FileReader to read the image as a Data URL for list preview
             const reader = new FileReader();
             reader.onload = (e) => {
-                const photoDataUrl = e.target.result; // This is the base64 string
-                const odiaDOB = convertToOdiaDate(dobVal); // Convert DOB
+                const photoDataUrl = e.target.result;
+                const odiaDOB = convertToOdiaDate(dobVal);
                 
-                // New photo naming: FirstName_RollNo.ext
                 const firstName = nameVal.split(' ')[0] || 'student';
-                const safeFirstName = firstName.replace(/[^a-zA-Z0-9]/g, ''); // Remove special chars
+                const safeFirstName = firstName.replace(/[^a-zA-Z0-9]/g, '');
                 const extension = originalPhoto.name.split('.').pop().toLowerCase();
                 const newFilename = `${safeFirstName}_${rollVal}.${extension}`;
                 
-                const studentId = Date.now(); // Unique ID for delete
-                
-                // Store all student data
+                const studentId = Date.now();
                 const student = {
                     id: studentId,
                     name: nameVal,
                     class: classVal,
                     dob: dobVal,
-                    dobOdia: odiaDOB, // Store Odia DOB for preview
+                    dobOdia: odiaDOB,
                     roll: rollVal,
                     phone: phoneInput.value,
                     photoFile: originalPhoto,
-                    photoDataUrl: photoDataUrl, // Store photo preview data
+                    photoDataUrl: photoDataUrl,
                     newPhotoName: newFilename
                 };
                 students.push(student);
                 
-                // Create the new list item HTML
                 const studentDiv = document.createElement('div');
                 studentDiv.dataset.studentId = studentId;
                 studentDiv.innerHTML = `
@@ -502,7 +455,7 @@
                 `;
                 studentListDiv.appendChild(studentDiv);
                 
-                // Clear form for next entry
+                // Clear form
                 nameInput.value = '';
                 classSelect.value = '';
                 rollInput.value = '';
@@ -513,15 +466,13 @@
                 photoPreview.style.display = 'none';
                 nameInput.focus();
                 
-                // Enable the "Submit" button
                 completeBtn.disabled = false;
             };
             
-            // Read the image file as a Data URL
             reader.readAsDataURL(originalPhoto);
         });
         
-        // --- Show photo preview in the form when a file is selected ---
+        // --- STUDENT PHOTO PREVIEW (in form) (Same as before) ---
         photoInput.addEventListener('change', () => {
             const file = photoInput.files[0];
             if (file) {
@@ -533,58 +484,40 @@
             }
         });
 
-        // --- 2b. DELETE STUDENT from list ---
+        // --- 2b. DELETE STUDENT (Same as before) ---
         studentListDiv.addEventListener('click', (e) => {
-            // Check if the clicked element is a delete button
             if (e.target.classList.contains('deleteBtn')) {
                 const studentId = e.target.dataset.id;
-                
-                // Remove student from the 'students' array
                 students = students.filter(s => s.id.toString() !== studentId);
-                
-                // Remove the student's div from the page
                 e.target.closest('div[data-student-id]').remove();
                 
-                // If list is now empty, disable "Submit" button
                 if (students.length === 0) {
                     completeBtn.disabled = true;
                 }
             }
         });
 
-
-        // --- 3. "SUBMIT" BUTTON (Go to Export Page) ---
+        // --- 3. COMPLETE ADDING (Same as before) ---
         completeBtn.addEventListener('click', () => {
-            if (students.length === 0) return; // Should be disabled, but for safety
-            
-            // Hide Step 2
+            if (students.length === 0) return;
             entryForm.style.display = 'none';
-            schoolInfoDisplay.style.display = 'none';
-            
-            // Show Step 3
             previewTitle.style.display = 'block';
             studentListDiv.style.display = 'block';
             shareSection.style.display = 'block';
-            
-            // Add class to hide delete buttons on final preview
+            schoolInfoDisplay.style.display = 'none';
             studentListDiv.classList.add('step-3-preview');
         });
 
-        // --- 3b. "EDIT" BUTTON (Go back to Step 2) ---
+        // --- 3b. EDIT BUTTON (Same as before) ---
         editBtn.addEventListener('click', () => {
-            // Hide Step 3
             shareSection.style.display = 'none';
             previewTitle.style.display = 'none';
-            
-            // Show Step 2
             entryForm.style.display = 'block';
             schoolInfoDisplay.style.display = 'block';
-            
-            // Remove class to show delete buttons again
             studentListDiv.classList.remove('step-3-preview');
         });
 
-        // --- 4. EXPORT "SMART" FUNCTION (with Odia CSV) ---
+        // --- 4. EXPORT "SMART" FUNCTION (MODIFIED) ---
         exportBtn.addEventListener('click', async () => {
             if (students.length === 0) return;
 
@@ -594,23 +527,22 @@
             const zipFileName = 'student_id_data.zip';
 
             try {
-                // --- 4a. Generate CSV data with Odia Headers ---
+                // --- 4a. Generate CSV data (NEW ODIA HEADERS) ---
                 const headers = [
                     'ନାମ', 'ଶ୍ରେଣୀ', 'ଜନ୍ମ ତାରିଖ', 'ରୋଲ୍ ନମ୍ବର', 'ଫୋନ୍ ନମ୍ବର', 'ଫଟୋ ପଥ',
                     'ବିଦ୍ୟାଳୟର ନାମ', 'ବ୍ଲକ', 'ଜିଲ୍ଲା', 'ପିନକୋଡ୍', 'UDISE କୋଡ୍', 'ଦସ୍ତଖତ ଫାଇଲ୍'
                 ];
                 
-                // --- Add UTF-8 BOM (\uFEFF) to force Excel to read Odia ---
+                // --- NEW: Add UTF-8 BOM ---
                 let csvContent = '\uFEFF' + headers.join(',') + '\n';
                 
                 students.forEach(student => {
-                    // New Path: e:\photos\[UDISE]\photoname
                     const photoPath = `e:\\photos\\${schoolData.udise}\\${student.newPhotoName}`;
-                    
+                    // Data values already include Odia, this is perfect.
                     const row = [
                         `"${student.name}"`,
                         `"${student.class}"`,
-                        `"${student.dob}"`, // Use standard YYYY-MM-DD for machine readability
+                        `"${student.dob}"`, // Using standard YYYY-MM-DD for the data, as it's machine-readable
                         `"${student.roll}"`,
                         `"${student.phone}"`,
                         `"${photoPath}"`,
@@ -626,10 +558,11 @@
 
                 // --- 4b. Create Zip and add all files ---
                 const zip = new JSZip();
-                zip.file('student_data.csv', csvContent); // Add UTF-8 CSV
-                zip.file(schoolData.signatureFileName, schoolData.signatureFile); // Add HM sig
+                // We must use { encoding: "UTF-8" } here when adding the file
+                zip.file('student_data.csv', csvContent); // JSZip handles UTF-8 by default
+                zip.file(schoolData.signatureFileName, schoolData.signatureFile);
                 students.forEach(student => {
-                    zip.file(student.newPhotoName, student.photoFile); // Add all student photos
+                    zip.file(student.newPhotoName, student.photoFile);
                 });
 
                 // --- 4c. Generate the Zip Blob ---
@@ -649,14 +582,11 @@
                 if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
                     await navigator.share(shareData);
                 } else {
-                    // Silently download if sharing is not supported (e.g., desktop)
                     downloadBlob(zipBlob, zipFileName, 'application/zip');
                 }
             } catch (err) {
-                // --- 4e. Silent Fallback ---
                 console.error('Error sharing zip file:', err);
-                if (err.name !== 'AbortError') { // Don't download if user just clicked "cancel"
-                    // Silently download on "permission denied" or other errors
+                if (err.name !== 'AbortError') {
                     if (zipBlob) {
                         downloadBlob(zipBlob, zipFileName, 'application/zip');
                     } else {
@@ -664,15 +594,24 @@
                     }
                 }
             } finally {
-                // --- 4f. Reset button ---
+                // --- 4e. Reset button ---
                 exportBtn.textContent = 'Download / Share All Data';
                 exportBtn.disabled = false;
             }
         });
 
-        // --- 5. Helper function to trigger download ---
+        // --- 5. Helper function to trigger download (MODIFIED FOR UTF-8) ---
         function downloadBlob(content, fileName, contentType) {
-            const blob = new Blob([content], { type: contentType });
+            // Check if we are downloading a CSV (not used in main flow, but good for testing)
+            // The main flow downloads a zip, which is fine.
+            let blob;
+            if (contentType.includes('csv')) {
+                 // Add BOM for CSV downloads
+                blob = new Blob(['\uFEFF' + content], { type: contentType + ';charset=utf-8;' });
+            } else {
+                blob = new Blob([content], { type: contentType });
+            }
+            
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
@@ -683,11 +622,10 @@
             document.body.removeChild(link);
         }
         
-        // --- 6. Initialize District Dropdown on page load ---
+        // --- 6. Initialize District Dropdown (Same as before) ---
         populateDistricts();
 
     </script>
 
 </body>
 </html>
-
