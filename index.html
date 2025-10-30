@@ -228,7 +228,7 @@
 
 
     <script>
-        // --- MODIFIED: Added Odia data back ---
+        // --- Odia data ---
         const odiaDigits = ['୦', '୧', '୨', '୩', '୪', '୫', '୬', '୭', '୮', '୯'];
         const odiaMonths = ['ଜାନୁଆରୀ', 'ଫେବୃଆରୀ', 'ମାର୍ଚ୍ଚ', 'ଅପ୍ରେଲ', 'ମଇ', 'ଜୁନ୍', 'ଜୁଲାଇ', 'ଅଗଷ୍ଟ', 'ସେପ୍ଟେମ୍ବର', 'ଅକ୍ଟୋବର', 'ନଭେମ୍ବର', 'ଡିସେମ୍ବର'];
         
@@ -268,7 +268,7 @@
             }
         });
         
-        // --- MODIFIED: Added Odia Date Conversion Function back ---
+        // --- Odia Date Conversion Function ---
         function convertToOdiaDate(dateString) {
             if (!dateString) return '';
             try {
@@ -332,7 +332,7 @@
         });
 
 
-        // --- 2. ADD STUDENT (MODIFIED) ---
+        // --- 2. ADD STUDENT ---
         addBtn.addEventListener('click', () => {
             const classVal = classSelect.value.trim();
             const rollVal = rollInput.value.trim();
@@ -356,7 +356,6 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 const photoDataUrl = e.target.result;
-                // MODIFIED: Added odiaDOB back
                 const odiaDOB = convertToOdiaDate(dobVal);
                 
                 const firstName = nameVal.split(' ')[0] || 'student';
@@ -371,7 +370,7 @@
                     name: nameVal,
                     class: classVal,
                     dob: dobVal,
-                    dobOdia: odiaDOB, // MODIFIED: Added odiaDOB back
+                    dobOdia: odiaDOB, 
                     roll: rollVal,
                     phone: phoneInput.value,
                     photoFile: originalPhoto, 
@@ -457,7 +456,7 @@
             studentListDiv.classList.remove('step-3-preview');
         });
 
-        // --- 4. EXPORT "SMART" FUNCTION (UNCHANGED FROM PREVIOUS) ---
+        // --- 4. EXPORT "SMART" FUNCTION (MODIFIED) ---
         exportBtn.addEventListener('click', async () => {
             if (students.length === 0) return;
 
@@ -470,7 +469,8 @@
                 // English headers (as requested)
                 const headers = ['name', 'class', 'dob', 'rollno', 'phone', 'photo'];
                 
-                let csvContent = headers.join(',') + '\n';
+                // MODIFIED: Added UTF-8 BOM back in
+                let csvContent = '\uFEFF' + headers.join(',') + '\n';
                 
                 students.forEach(student => {
                     // E:\photo\ path (as requested)
@@ -488,7 +488,8 @@
                 });
 
                 const zip = new JSZip();
-                zip.file('student_data.csv', csvContent);
+                // JSZip will handle the BOM correctly
+                zip.file('student_data.csv', csvContent); 
                 students.forEach(student => {
                     zip.file(student.newPhotoName, student.photoFile);
                 });
@@ -521,6 +522,9 @@
 
         // --- 5. Helper function to trigger download ---
         function downloadBlob(content, fileName, contentType) {
+            // The BOM is already in the 'content' if it's a CSV,
+            // so we don't need the special check here anymore.
+            // JSZip already gave us the full blob.
             const blob = new Blob([content], { type: contentType });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
