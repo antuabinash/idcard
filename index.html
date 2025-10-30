@@ -339,8 +339,9 @@
             reader.readAsDataURL(originalPhoto);
         });
         
-        // --- STUDENT PHOTO PREVIEW (in form) (Same as before) ---
-        photoInput.addEventListener('change', () => {
+        // --- STUDENT PHOTO PREVIEW (in form) (FIXED) ---
+        // We create a separate function to handle the preview
+        function handlePhotoPreview() {
             const file = photoInput.files[0];
             if (file) {
                 photoPreview.src = URL.createObjectURL(file);
@@ -349,7 +350,13 @@
                 photoPreview.src = '';
                 photoPreview.style.display = 'none';
             }
-        });
+        }
+        
+        // We listen to BOTH 'change' and 'input' events.
+        // This increases reliability on mobile browsers where 'change'
+        // might not fire after using the camera.
+        photoInput.addEventListener('change', handlePhotoPreview);
+        photoInput.addEventListener('input', handlePhotoPreview);
 
         // --- 2b. DELETE STUDENT (Same as before) ---
         studentListDiv.addEventListener('click', (e) => {
