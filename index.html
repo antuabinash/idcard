@@ -248,22 +248,37 @@
             }
         });
         
-        // --- (NEW) WORKAROUND FOR ANDROID CAMERA BUG ---
+        // --- (NEW) WORKAROUND FOR ANDROID CAMERA BUG (POLLING FIX) ---
         // Listen for the window to regain focus (e.g., after camera closes)
         window.addEventListener('focus', () => {
-            console.log("Window gained focus, checking for file...");
-            // Give the browser a split second to populate the file list
-            setTimeout(() => {
-                // Manually trigger our preview function
-                // This will check if a file exists and show it,
-                // catching cases where 'change'/'input' events failed.
+            console.log("Window gained focus, starting file check poll...");
+
+            let attempts = 0;
+            const maxAttempts = 20; // 20 attempts * 100ms = 2 seconds
+            const pollInterval = 100; // Check every 100ms
+
+            const pollForFile = () => {
+                attempts++;
                 
-                // We only call it if there's a file but the preview isn't showing
+                // Check if file exists AND preview isn't already showing
                 if (photoInput.files.length > 0 && !photoPreview.src.startsWith('blob:')) {
-                     console.log("Forcing photo preview!");
-                     handlePhotoPreview();
+                    console.log(`File found on attempt ${attempts}! Forcing preview.`);
+                    handlePhotoPreview();
+                    return; // Stop polling
                 }
-            }, 300); // 300ms delay
+                
+                // Stop if we've tried too many times
+                if (attempts >= maxAttempts) {
+                    console.log("Polling stopped. File not found after 2 seconds.");
+                    return; // Stop polling
+                }
+                
+                // Try again
+                setTimeout(pollForFile, pollInterval);
+            };
+
+            // Start the polling
+            setTimeout(pollForFile, pollInterval);
         });
 
         // --- Odia Date Conversion Function (Same as before) ---
