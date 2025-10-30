@@ -71,8 +71,22 @@
         /* Button Colors */
         #addBtn { background-color: #007bff; color: white; }
         #completeBtn { background-color: #ffc107; color: #333; }
-        #exportBtn { background-color: #28a745; color: white; }
-        #editBtn { background-color: #6c757d; color: white; margin-top: 0; }
+        
+        /* --- MODIFIED: New Button Styles --- */
+        #shareBtn {
+            background-color: #28a745; /* Green */
+            color: white;
+            display: none; /* Hidden by default */
+        }
+        #downloadBtn {
+            background-color: #007bff; /* Blue */
+            color: white;
+        }
+        #editBtn { 
+            background-color: #6c757d; 
+            color: white; 
+            margin-top: 0; 
+        }
         
         /* NEW: Camera Button */
         #openCameraBtn {
@@ -215,7 +229,8 @@
 
     <div id="shareSection" style="display:none;">
         <h3>Export Data</h3>
-        <button id="exportBtn">Download / Share All Data</button>
+        <button id="shareBtn">Share Data</button>
+        <button id="downloadBtn">Download Data</button>
         <button id="editBtn">Edit</button>
     </div>
 
@@ -248,7 +263,11 @@
         const photoInput = document.getElementById('photo');
         const photoPreview = document.getElementById('photoPreview');
         const shareSection = document.getElementById('shareSection');
-        const exportBtn = document.getElementById('exportBtn');
+        
+        // --- MODIFIED: Get new button elements ---
+        const shareBtn = document.getElementById('shareBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        
         const editBtn = document.getElementById('editBtn'); 
         const studentListDiv = document.getElementById('studentList');
         const previewTitle = document.getElementById('previewTitle');
@@ -260,6 +279,11 @@
         const cameraVideo = document.getElementById('cameraVideo');
         const cameraCanvas = document.getElementById('cameraCanvas');
         const captureBtn = document.getElementById('captureBtn');
+
+        // --- MODIFIED: Show Share button if supported ---
+        if (navigator.share) {
+            shareBtn.style.display = 'block';
+        }
 
         // --- PREVENT ACCIDENTAL BACK BUTTON ---
         window.addEventListener('beforeunload', (e) => {
@@ -456,75 +480,91 @@
             studentListDiv.classList.remove('step-3-preview');
         });
 
-        // --- 4. EXPORT "SMART" FUNCTION (MODIFIED) ---
-        exportBtn.addEventListener('click', async () => {
-            if (students.length === 0) return;
+        // --- 4. EXPORT FUNCTIONS (MODIFIED) ---
 
-            exportBtn.textContent = 'Processing... Please Wait...';
-            exportBtn.disabled = true;
-            let zipBlob;
+        // --- NEW Reusable Function to create the Zip data ---
+        async function createZipData() {
+            // English headers (as requested)
+            const headers = ['name', 'class', 'dob', 'rollno', 'phone', 'photo'];
+            
+            // Added UTF-8 BOM
+            let csvContent = '\uFEFF' + headers.join(',') + '\n';
+            
+            students.forEach(student => {
+                // E:\photo\ path (as requested)
+                const photoPath = 'E:\\photo\\' + student.newPhotoName;
+                
+                const row = [
+                    `"${student.name}"`,
+                    `"${student.class}"`,
+                    `"${student.dob}"`, // Standard YYYY-MM-DD format for CSV
+                    `"${student.roll}"`,
+                    `"${student.phone}"`,
+                    `"${photoPath}"` 
+                ];
+                csvContent += row.join(',') + '\n';
+            });
+
+            const zip = new JSZip();
+            zip.file('student_data.csv', csvContent); 
+            students.forEach(student => {
+                zip.file(student.newPhotoName, student.photoFile);
+            });
+
+            const zipBlob = await zip.generateAsync({ type: 'blob' });
             const zipFileName = 'student_id_data.zip';
+            
+            return { zipBlob, zipFileName };
+        }
+
+        // --- MODIFIED: New Share Button Listener ---
+        shareBtn.addEventListener('click', async () => {
+            if (students.length === 0) return;
+            shareBtn.textContent = 'Processing...';
+            shareBtn.disabled = true;
 
             try {
-                // English headers (as requested)
-                const headers = ['name', 'class', 'dob', 'rollno', 'phone', 'photo'];
-                
-                // MODIFIED: Added UTF-8 BOM back in
-                let csvContent = '\uFEFF' + headers.join(',') + '\n';
-                
-                students.forEach(student => {
-                    // E:\photo\ path (as requested)
-                    const photoPath = 'E:\\photo\\' + student.newPhotoName;
-                    
-                    const row = [
-                        `"${student.name}"`,
-                        `"${student.class}"`,
-                        `"${student.dob}"`, // Standard YYYY-MM-DD format for CSV
-                        `"${student.roll}"`,
-                        `"${student.phone}"`,
-                        `"${photoPath}"` 
-                    ];
-                    csvContent += row.join(',') + '\n';
-                });
-
-                const zip = new JSZip();
-                // JSZip will handle the BOM correctly
-                zip.file('student_data.csv', csvContent); 
-                students.forEach(student => {
-                    zip.file(student.newPhotoName, student.photoFile);
-                });
-
-                zipBlob = await zip.generateAsync({ type: 'blob' });
-                
+                const { zipBlob, zipFileName } = await createZipData();
                 const zipFile = new File([zipBlob], zipFileName, { type: 'application/zip' });
                 const shareData = {
                     title: 'Student ID Data',
                     text: 'Student CSV and photos for ID card generation.',
                     files: [zipFile]
                 };
-
-                if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-                    await navigator.share(shareData);
-                } else {
-                    downloadBlob(zipBlob, zipFileName, 'application/zip');
-                }
+                
+                await navigator.share(shareData);
             } catch (err) {
                 console.error('Error sharing zip file:', err);
                 if (err.name !== 'AbortError') {
-                    if (zipBlob) { downloadBlob(zipBlob, zipFileName, 'application/zip'); }
-                    else { alert('A critical error occurred while creating the zip file.'); }
+                    alert('Could not share file. Error: ' + err.message);
                 }
             } finally {
-                exportBtn.textContent = 'Download / Share All Data';
-                exportBtn.disabled = false;
+                shareBtn.textContent = 'Share Data';
+                shareBtn.disabled = false;
             }
         });
 
+        // --- MODIFIED: New Download Button Listener ---
+        downloadBtn.addEventListener('click', async () => {
+            if (students.length === 0) return;
+            downloadBtn.textContent = 'Processing...';
+            downloadBtn.disabled = true;
+
+            try {
+                const { zipBlob, zipFileName } = await createZipData();
+                downloadBlob(zipBlob, zipFileName, 'application/zip');
+            } catch (err) {
+                console.error('Error downloading zip file:', err);
+                alert('Could not create zip file. Error: ' + err.message);
+            } finally {
+                downloadBtn.textContent = 'Download Data';
+                downloadBtn.disabled = false;
+            }
+        });
+
+
         // --- 5. Helper function to trigger download ---
         function downloadBlob(content, fileName, contentType) {
-            // The BOM is already in the 'content' if it's a CSV,
-            // so we don't need the special check here anymore.
-            // JSZip already gave us the full blob.
             const blob = new Blob([content], { type: contentType });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
