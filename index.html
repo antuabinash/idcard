@@ -248,6 +248,24 @@
             }
         });
         
+        // --- (NEW) WORKAROUND FOR ANDROID CAMERA BUG ---
+        // Listen for the window to regain focus (e.g., after camera closes)
+        window.addEventListener('focus', () => {
+            console.log("Window gained focus, checking for file...");
+            // Give the browser a split second to populate the file list
+            setTimeout(() => {
+                // Manually trigger our preview function
+                // This will check if a file exists and show it,
+                // catching cases where 'change'/'input' events failed.
+                
+                // We only call it if there's a file but the preview isn't showing
+                if (photoInput.files.length > 0 && !photoPreview.src.startsWith('blob:')) {
+                     console.log("Forcing photo preview!");
+                     handlePhotoPreview();
+                }
+            }, 300); // 300ms delay
+        });
+
         // --- Odia Date Conversion Function (Same as before) ---
         function convertToOdiaDate(dateString) {
             if (!dateString) return '';
